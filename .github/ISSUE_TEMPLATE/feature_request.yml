@@ -1,0 +1,37 @@
+name: ✨Feature Request
+description: Request a new feature or enhancement
+labels: ["enhancement"]
+title: "[FEAT]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please make sure this feature request hasn't been already submitted by someone by looking through other open/closed issues
+    
+  - type: textarea
+    id: describe
+    attributes:
+      label: Is your feature request related to a problem? Please describe.
+      description: A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the solution you'd like
+      description: A clear and concise description of what you want to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Describe alternatives you've considered
+      description: A clear and concise description of any alternative solutions or features you've considered.
+
+  - type: textarea
+    id: additional-information
+    attributes:
+      label: Additional Context
+      description: Give us some additional information on the feature request like proposed solutions, links, screenshots, etc.
