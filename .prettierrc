@@ -1,0 +1,22 @@
+{
+	"trailingComma": "none",
+	"useTabs": true,
+	"printWidth": 160,
+	"tabWidth": 2,
+	"overrides": [
+		{
+			"files": "*.{yaml,yml}",
+			"options": { "useTabs": false, "tabWidth": 2, "singleQuote": true }
+		},
+		{
+			"files": "*.{prettierrc, json}",
+			"options": {
+				"parser": "json",
+				"printWidth": 80,
+				"useTabs": true,
+				"singleQuote": false
+			}
+		}
+	],
+	"$schema": "https://json.schemastore.org/prettierrc"
+}

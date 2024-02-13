@@ -1,0 +1,22 @@
+{
+	"name": "dschach-github",
+	"private": true,
+	"version": "1.0.0",
+	"description": "Template files for personal repos",
+	"scripts": {
+		"postinstall": "husky install",
+		"precommit": "lint-staged",
+		"prettier:verify": "prettier --list-different \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
+		"prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\""
+	},
+	"devDependencies": {
+		"husky": "^9.0.10",
+		"lint-staged": "^15.2.2",
+		"prettier": "^3.2.5"
+	},
+	"lint-staged": {
+		"**/*": [
+			"prettier --write"
+		]
+	}
+}
