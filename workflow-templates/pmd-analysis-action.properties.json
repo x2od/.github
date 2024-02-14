@@ -1,0 +1,7 @@
+{
+	"name": "PMD Analysis Action",
+	"description": "PMD GitHub Action starter workflow",
+	"iconName": "octicon check",
+	"categories": ["code-quality", "Security"],
+	"filePatterns": ["sfdx-project.json", "code-review"]
+}
