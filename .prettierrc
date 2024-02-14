@@ -13,9 +13,14 @@
 			"options": {
 				"parser": "json",
 				"printWidth": 80,
+				"tabWidth": 2,
 				"useTabs": true,
 				"singleQuote": false
 			}
+		},
+		{
+			"files": "*.json5",
+			"options": { "quote-props": "consistent", "parser": "jsonc" }
 		}
 	],
 	"$schema": "https://json.schemastore.org/prettierrc"
