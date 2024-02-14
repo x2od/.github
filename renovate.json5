@@ -1,0 +1,98 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"description": "Custom renovate rules for @dschach",
+	"extends": [
+		":ignoreModulesAndTests",
+		"group:monorepos",
+		"group:recommended",
+		"replacements:all",
+		"workarounds:all",
+		"docker:pinDigests",
+		"helpers:pinGitHubActionDigests",
+		":semanticCommits",
+		":semanticCommitScope({{depName}})",
+		":approveMajorUpdates"
+	],
+	"schedule": [],
+	"timezone": "America/Los_Angeles",
+	"configMigration": true,
+	"automergeType": "pr",
+	"commitMessageLowerCase": "never",
+	"rangeStrategy": "bump",
+	"commitBodyTable": true,
+	"semanticCommits": "enabled",
+	"dependencyDashboard": true,
+	"dependencyDashboardAutoclose": true,
+	"separateMinorPatch": false,
+	"github-actions": {
+		"description": "All Github updates",
+		"automergeType": "pr",
+		"fileMatch": ["^(workflow-templates|\\.(?:github|gitea|forgejo)/workflows)/[^/]+\\.ya?ml$", "(^|/)action\\.ya?ml$"],
+		"semanticCommitType": "ci"
+	},
+	"major": {
+		"autoApprove": false,
+		"automerge": false
+	},
+	"pre-commit": { "enabled": true },
+	"vulnerabilityAlerts": { "enabled": true },
+	"lockFileMaintenance": {
+		"schedule": ["monthly"],
+		"semanticCommitScope": "lock-file",
+		"semanticCommitType": "chore",
+		"enabled": true,
+		"autoApprove": true,
+		"automerge": true
+	},
+	"packageRules": [
+		{
+			"description": "all minor/patch updates",
+			"automerge": true,
+			"autoApprove": true,
+			"matchCurrentVersion": ">= 1.0.0",
+			"matchUpdateTypes": ["minor", "patch"]
+		},
+		{
+			"semanticCommitType": "deps",
+			"semanticCommitScope": "{{depName}}",
+			"description": "npm dependencies (rare)",
+			"matchManagers": ["npm"],
+			"matchDepTypes": ["dependencies"]
+		},
+		{
+			"semanticCommitType": "build",
+			"semanticCommitScope": "{{depName}}",
+			"description": "npm devDependencies",
+			"matchManagers": ["npm"],
+			"matchDepTypes": ["devDependencies", "optionalDependencies"]
+		},
+		{
+			"description": "renovate updates require approval",
+			"matchManagers": ["npm"],
+			"matchPackageNames": ["renovate"],
+			"dependencyDashboardApproval": true
+		},
+		{
+			"description": "Github minor/patch updates",
+			"matchCurrentVersion": ">= 1.0.0",
+			"matchManagers": ["github-actions"],
+			"matchUpdateTypes": ["minor", "patch"]
+		},
+		{
+			"description": "Github major updates",
+			"matchCurrentVersion": ">= 1.0.0",
+			"matchManagers": ["github-actions"],
+			"matchUpdateTypes": ["major"]
+		},
+		/* {
+			"description": "Github action version pinning",
+			"matchManagers": ["github-actions"],
+			"matchUpdateTypes": ["pin", "pinDigest"],
+			"semanticCommitScope": "github-actions"
+		}, */
+		{
+			"matchDepTypes": ["action"],
+			"pinDigests": false
+		}
+	]
+}
