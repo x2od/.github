@@ -1,15 +1,15 @@
 name: 🐛Bug Report
 description: File a bug report here
-title: "[BUG]: "
-labels: ["bug"]
-assignees: ["dschach"]
+title: '[BUG]: '
+labels: ['bug']
+assignees: ['dschach']
 body:
   - type: markdown
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report 🤗
         Make sure there aren't any open/closed issues for this topic 😃
-        
+
   - type: textarea
     id: bug-description
     attributes:
@@ -17,19 +17,40 @@ body:
       description: Give us a brief description of what happened and what should have happened
     validations:
       required: true
-      
+
   - type: textarea
     id: steps-to-reproduce
     attributes:
-      label: Steps To Reproduce
+      label: Steps to Reproduce
       description: Steps to reproduce the behavior.
       placeholder: |
         1. Go to '...'
         2. Click on '...'
         3. Scroll down to '...'
         4. See error
+        Include exact error message(s)
     validations:
       required: true
+
+  - type: input
+    attributes:
+      label: 'Salesforce Release'
+      placeholder: "Spring '24 or API 60.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    attributes:
+      label: 'Environment'
+      multiple: false
+      options:
+        - Production
+        - Sandbox
+        - Scratch Org
+        - Other (please specify below)
+    validations:
+      required: true
+
   - type: textarea
     id: additional-information
     attributes:
