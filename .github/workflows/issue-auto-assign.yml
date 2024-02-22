@@ -13,6 +13,6 @@ jobs:
       - name: 'Auto-assign issue'
         uses: pozil/auto-assign-issue@v1
         with:
-          assignees: dschac1
-          numOfAssignee: a
-          allowSelfAssign: trie
+          assignees: dschach
+          numOfAssignee: 1
+          allowSelfAssign: true
