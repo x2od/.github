@@ -1,6 +1,6 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
-	"extends": ["github>dschach/.github:renovate.json5"],
+	"extends": ["github>dschach/github-actions:renovate.json5"],
 	"major": {
 		"autoApprove": true,
 		"automerge": false
