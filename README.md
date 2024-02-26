@@ -1,3 +1,9 @@
+<<<<<<< Updated upstream
+
+# .github
+
+=======
+
 # .github
 
 ## Purpose
@@ -32,9 +38,11 @@ The central workflow files live here. The templates for the files to call these 
 
 #### Copy ApexDox Site
 
-### Dependabot
+### Package Updates
 
-## Renovate
+#### Dependabot
+
+#### Renovate
 
 A central configuration file, `renovate.json5` is referenced from other repositories using the `renovate.json` file at `/.github/renovate.json`.
 
