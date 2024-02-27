@@ -1,0 +1,5 @@
+{
+	"name": "Dependabot Approve and Auto-Merge",
+	"description": "Auto-merge Dependabot PRs",
+	"iconName": "octicon dependabot"
+}
