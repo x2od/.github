@@ -32,7 +32,13 @@
 
 - Develop features and bug fixes in _topic_ branches.
 - _Topic_ branches can live in forks (external contributors) or within this repository (committers).
-  \*\* When creating _topic_ branches in this repository please prefix with `<developer-name>/`.
+  When creating _topic_ branches in this repository please prefix with `<semantic-prefix>/<developer-name>/`.
+
+- `Fork` this repository
+- Create a `branch`
+- Commit your changes
+- `Push` your `commits` to the `branch`
+- Submit a `pull request`
 
 ### Merging Pull Requests
 
