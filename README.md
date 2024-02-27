@@ -1,9 +1,3 @@
-<<<<<<< Updated upstream
-
-# .github
-
-=======
-
 # .github
 
 ## Purpose
@@ -22,9 +16,15 @@ The central workflow files live here. The templates for the files to call these 
 
 #### Create Scratch Org and Apex Test
 
+Script that creates a scratch org, deploys metadata, runs Apex tests, calls other workflow, and deletes scratch org
+
 #### Lint LWC and LWC Test
 
+Run LWC tests
+
 #### Prettier Verify
+
+Ensures npm modules are installed, runs Prettier, exits with error if code is unformatted
 
 #### SFDX Scanner
 
