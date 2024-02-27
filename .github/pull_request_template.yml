@@ -1,0 +1,14 @@
+name: Pull Request
+about: Submit a pull request
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # BEFORE YOU SUBMIT YOUR PR
+
+        1. Make sure your PR is not a duplicate
+        1. Give your PR a semantic-release title
+          - Use the format specified at [semantic-release](https://semantic-release.gitbook.io/semantic-release/#how-does-it-work)
+          - (example: feat(pencil): add pencil to tools)
+        1. Be sure you have reviewed the Code of Conduct
+        1. Fill in the form below
