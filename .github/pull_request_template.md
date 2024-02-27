@@ -27,7 +27,7 @@
 
 (check all applicable)
 
-- [ ] BREAKING CHANGE
+- [ ] ❗ BREAKING CHANGE
 - [ ] 🍕 Feature
 - [ ] 🐛 Bug Fix
 - [ ] 📝 Documentation Update

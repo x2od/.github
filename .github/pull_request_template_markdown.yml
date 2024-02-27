@@ -17,3 +17,20 @@ body:
     attributes:
       value: |
         ## What does this PR do?
+  - type: checkbox
+    id: PR_type
+    attributes:
+      label: This Pull request provides
+      options:
+        - label: ❗ BREAKING CHANGE
+        - label: 🍕 Feature
+        - label: 🐛 Bug Fix
+        - label: 📝 Documentation Update
+        - label: 🎨 Style
+        - label: 🧑‍💻 Code Refactor
+        - label: 🔥 Performance Improvements
+        - label: ✅ Test
+        - label: 🤖 Build
+        - label: 🔁 CI
+        - label: 📦 Chore (Release)
+        - label: ⏩ Revert
