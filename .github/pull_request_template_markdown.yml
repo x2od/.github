@@ -12,3 +12,8 @@ body:
           - (example: feat(pencil): add pencil to tools)
         1. Be sure you have reviewed the Code of Conduct
         1. Fill in the form below
+
+  - type: markdown
+    attributes:
+      value: |
+        ## What does this PR do?
