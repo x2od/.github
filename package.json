@@ -8,6 +8,7 @@
 		"precommit": "lint-staged",
 		"prettier:verify": "prettier --list-different \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
 		"prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
+		"prune": "git branch | grep -v \"main\" | xargs git branch -D",
 		"renovate:validate": "npx renovate-config-validator"
 	},
 	"devDependencies": {
