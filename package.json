@@ -15,7 +15,7 @@
 		"husky": "^9.0.11",
 		"lint-staged": "^15.2.2",
 		"prettier": "^3.2.5",
-		"renovate": "^37.219.5"
+		"renovate": "^37.229.5"
 	},
 	"lint-staged": {
 		"**/*": [
