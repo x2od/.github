@@ -2,17 +2,13 @@
      For Work In Progress Pull Requests, please use the Draft PR feature,
      see https://github.blog/2019-02-14-introducing-draft-pull-requests/ for further details.
 
-     For a timely review/response, please avoid force-pushing additional
-     commits if your PR already received reviews or comments.
-
      Before submitting a Pull Request, please ensure you've done the following:
-     - 📖 Read the Forem Contributing Guide: https://developers.forem.com/contributing-guide/forem#create-a-pull-request
-     - 📖 Read the Code of Conduct: ./blob/main/CODE_OF_CONDUCT.md
-     - 👷‍♀️ Create small PRs. In most cases this will be possible.
+     - 📖 Read the Contributing Guide
+     - 📖 Read the Code of Conduct: [./blob/main/CODE_OF_CONDUCT.md](./blob/main/CODE_OF_CONDUCT.md)
+     - 👷‍♀️ Create small PRs.
      - ✅ Provide tests for your changes.
      - 📝 Use descriptive commit messages.
      - 📗 Update any related documentation and include any relevant screenshots.
--->
 
 # BEFORE YOU SUBMIT YOUR PR
 
@@ -23,7 +19,9 @@
 1. Be sure you have reviewed the Code of Conduct
 1. Fill in the form below
 
-## What does this PR do?
+-->
+
+# What does this PR do?
 
 (check all applicable)
 
@@ -40,17 +38,17 @@
 - [ ] 📦 Chore (Release)
 - [ ] ⏩ Revert
 
-## Describe your changes
+# Describe your changes
 
 ## Functionality Before
 
-<insert gif and/or summary>
+<insert_gif_or_summary>
 
 ## Functionality After
 
-<insert gif and/or summary>
+<insert_gif_or_summary>
 
-## Issue ticket number and link (if applicable)
+# Issue ticket number and link (if applicable)
 
 <!--
 For pull requests that relate or close an issue, please include them
@@ -64,28 +62,22 @@ automatically close the issue.
 - Related Issue #
 - Closes #
 
-## Checklist before requesting a review
+# Checklist before requesting a review
 
 - [ ] 🍕 I have performed a self-review of my code
 - [ ] 📗 The code has been linted and formatted using the repo Prettier configuration
 - [ ] ✅ If it includes Apex, Aura, LWC, or Flows, I have added thorough tests
 - [ ] 📝 I have used descriptive commit messages
 
-## Added to documentation?
-
-<!-- - [ ] 📓 docs.opensauced.pizza
-- [ ] 🍕 dev.to/opensauced
-- [ ] 📕 storybook -->
+# Added to documentation?
 
 - [ ] 📜 README.md
 - [ ] 🙅 no documentation needed
 
-<!-- - [ ] Do we need to implement analytics? -->
+# [optional] Are there any post deployment tasks we need to perform?
 
-## [optional] Are there any post deployment tasks we need to perform?
+# [optional] What gif or emoji best describes this PR or how it makes you feel?
 
-## [optional] What gif or emoji best describes this PR or how it makes you feel?
-
-## By submitting this PR, you agree to follow the [Code of Conduct](../blob/main/CODE_OF_CONDUCT.md)
+# By submitting this PR, you agree to follow the [Code of Conduct](../blob/main/CODE_OF_CONDUCT.md)
 
 - [ ] I agree to follow this project's Code of Conduct
