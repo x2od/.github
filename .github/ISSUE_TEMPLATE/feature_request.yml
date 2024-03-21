@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Please make sure this feature request hasn't been already submitted by someone by looking through other open/closed issues
-    
+
   - type: textarea
     id: describe
     attributes:
@@ -35,3 +35,12 @@ body:
     attributes:
       label: Additional Context
       description: Give us some additional information on the feature request like proposed solutions, links, screenshots, etc.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](../blob/main/CODE_OF_CONDUCT.md
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
