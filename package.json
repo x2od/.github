@@ -4,12 +4,12 @@
 	"version": "1.0.0",
 	"description": "Template files for personal repos",
 	"scripts": {
-		"postinstall": "husky install",
 		"precommit": "lint-staged",
 		"prettier:verify": "prettier --list-different \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
 		"prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
 		"prune": "git branch | grep -v \"main\" | xargs git branch -D",
-		"renovate:validate": "npx renovate-config-validator"
+		"renovate:validate": "npx renovate-config-validator",
+		"prepare": "husky"
 	},
 	"devDependencies": {
 		"husky": "^9.0.11",
@@ -18,7 +18,7 @@
 		"renovate": "^37.262.1"
 	},
 	"lint-staged": {
-		"**/*": [
+		"**/*.*": [
 			"prettier --write"
 		]
 	}
