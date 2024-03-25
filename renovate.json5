@@ -17,7 +17,7 @@
 	"timezone": "America/Los_Angeles",
 	"configMigration": true,
 	"automergeType": "pr",
-	"commitMessageLowerCase": "never",
+	"commitMessageLowerCase": "auto",
 	"rangeStrategy": "bump",
 	"commitBodyTable": true,
 	"semanticCommits": "enabled",
