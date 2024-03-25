@@ -7,6 +7,7 @@
 			"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{newVersion}}{{else}}{{#if isSingleVersion}}{{newVersion}}{{else}}{{#if newValue}}{{{newVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
 		}
 	],
-	"minor": { "labels": ["auto-merged"] },
-	"patch": { "labels": ["auto-merged"] }
+	"major": { "autoApprove": true, "automerge": false },
+	"patch": { "autoApprove": true, "automerge": true, "labels": ["auto-merged"] },
+	"minor": { "autoApprove": true, "automerge": true, "labels": ["auto-merged"] }
 }
