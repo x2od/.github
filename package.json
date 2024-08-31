@@ -5,13 +5,14 @@
 	"description": "Template files for personal repos",
 	"scripts": {
 		"precommit": "lint-staged",
+		"prepare": "husky",
 		"prettier:verify": "prettier --list-different \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
 		"prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
 		"prune": "git branch | grep -v \"main\" | xargs git branch -D",
-		"renovate:validate": "npm install -i renovate && npx renovate-config-validator && npm uninstall renovate",
-		"prepare": "husky"
+		"renovate:validate": "npm install -i renovate && npx renovate-config-validator && npm uninstall renovate"
 	},
 	"devDependencies": {
+		"@prettier/plugin-xml": "^3.4.1",
 		"husky": "^9.1.5",
 		"lint-staged": "^15.2.9",
 		"prettier": "^3.3.3"
