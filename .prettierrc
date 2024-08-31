@@ -19,9 +19,27 @@
 			}
 		},
 		{
+			"files": "*.xml",
+			"options": {
+				"parser": "xml",
+				"useTabs": true,
+				"singleQuote": false,
+				"xmlSelfClosingSpace": true
+			}
+		},
+		{
+			"files": ["**/pmd/*.xml", "*ruleset*.xml", "config/**/*.xml"],
+			"options": {
+				"parser": "xml",
+				"xmlSelfClosingSpace": true,
+				"xmlWhitespaceSensitivity": "ignore"
+			}
+		},
+		{
 			"files": "*.json5",
 			"options": { "quote-props": "consistent", "parser": "jsonc" }
 		}
 	],
+	"plugins": ["@prettier/plugin-xml"],
 	"$schema": "https://json.schemastore.org/prettierrc"
 }
