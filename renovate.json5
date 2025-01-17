@@ -51,7 +51,7 @@
 			"description": "all minor/patch updates",
 			"matchCurrentVersion": ">= 1.0.0",
 			"matchUpdateTypes": ["minor", "patch"],
-			"automerge": true,
+			"automerge": false,
 			"autoApprove": true
 		},
 		{
