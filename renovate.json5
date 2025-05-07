@@ -1,117 +1,118 @@
 {
-	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
-	"description": "Custom renovate rules for @x2od",
-	"extends": [
+	$schema: "https://docs.renovatebot.com/renovate-schema.json",
+	description: "Custom renovate rules for @x2od",
+	extends: [
 		":ignoreModulesAndTests",
 		"group:monorepos",
 		"group:recommended",
 		"replacements:all",
 		"workarounds:all",
 		"docker:pinDigests",
-		//"helpers:pinGitHubActionDigests",
 		":semanticCommits",
 		":semanticCommitScope({{depName}})",
-		":approveMajorUpdates"
+		":approveMajorUpdates",
 	],
-	"schedule": [],
-	"timezone": "America/Los_Angeles",
-	"configMigration": true,
-	"automergeType": "pr",
-	"commitMessageLowerCase": "auto",
-	"rangeStrategy": "bump",
-	"commitBodyTable": true,
-	"semanticCommits": "enabled",
-	"dependencyDashboard": true,
-	"dependencyDashboardAutoclose": true,
-	"configWarningReuseIssue": false,
-	"separateMinorPatch": false,
-	"pinDigests": false,
+	schedule: [],
+	timezone: "America/Los_Angeles",
+	configMigration: true,
+	automergeType: "pr",
+	commitMessageLowerCase: "auto",
+	rangeStrategy: "bump",
+	commitBodyTable: true,
+	semanticCommits: "enabled",
+	dependencyDashboard: true,
+	dependencyDashboardAutoclose: true,
+	configWarningReuseIssue: false,
+	separateMinorPatch: false,
+	pinDigests: false,
 	"github-actions": {
-		"description": "All Github updates",
-		"automergeType": "pr",
-		"fileMatch": ["^(workflow-templates|\\.(?:github|gitea|forgejo)/workflows)/[^/]+\\.ya?ml$", "(^|/)action\\.ya?ml$"],
-		"semanticCommitType": "ci"
+		description: "All Github updates",
+		automergeType: "pr",
+		managerFilePatterns: [
+			"/^(workflow-templates|\\.(?:github|gitea|forgejo)/workflows)/[^/]+\\.ya?ml$/",
+			"/(^|/)action\\.ya?ml$/",
+		],
+		semanticCommitType: "ci",
 	},
-	"major": {
-		"autoApprove": true,
-		"automerge": false
+	major: {
+		autoApprove: true,
+		automerge: false,
 	},
-	"pre-commit": { "enabled": true },
-	"vulnerabilityAlerts": { "enabled": true },
-	/* "lockFileMaintenance": {
-		"semanticCommitScope": "lock-file",
-		"semanticCommitType": "chore",
-		"enabled": true,
-		"autoApprove": false,
-		"automerge": true
-	}, */
-	"lockFileMaintenance": { "enabled": false },
-	"packageRules": [
+	"pre-commit": {
+		enabled: true,
+	},
+	vulnerabilityAlerts: {
+		enabled: true,
+	},
+	lockFileMaintenance: {
+		enabled: false,
+	},
+	packageRules: [
 		{
-			"description": "all minor/patch updates",
-			"matchCurrentVersion": ">= 1.0.0",
-			"matchUpdateTypes": ["minor", "patch"],
-			"automerge": false,
-			"autoApprove": true
+			description: "all minor/patch updates",
+			matchCurrentVersion: ">= 1.0.0",
+			matchUpdateTypes: ["minor", "patch"],
+			automerge: false,
+			autoApprove: true,
 		},
 		{
-			"description": "npm dependencies (rare)",
-			"semanticCommitType": "deps",
-			"semanticCommitScope": "{{depName}}",
-			"matchManagers": ["npm"],
-			"matchDepTypes": ["dependencies"]
+			description: "npm dependencies (rare)",
+			semanticCommitType: "deps",
+			semanticCommitScope: "{{depName}}",
+			matchManagers: ["npm"],
+			matchDepTypes: ["dependencies"],
 		},
 		{
-			"description": "npm devDependencies",
-			"semanticCommitType": "build",
-			"semanticCommitScope": "{{depName}}",
-			"matchManagers": ["npm"],
-			"matchDepTypes": ["devDependencies", "optionalDependencies"]
+			description: "npm devDependencies",
+			semanticCommitType: "build",
+			semanticCommitScope: "{{depName}}",
+			matchManagers: ["npm"],
+			matchDepTypes: ["devDependencies", "optionalDependencies"],
 		},
 		{
-			"description": "renovate updates require approval",
-			"matchManagers": ["npm"],
-			"matchPackageNames": ["renovate"],
-			"dependencyDashboardApproval": true
+			description: "renovate updates require approval",
+			matchManagers: ["npm"],
+			matchPackageNames: ["renovate"],
+			dependencyDashboardApproval: true,
 		},
 		{
-			"description": "Github minor/patch updates",
-			"matchCurrentVersion": ">= 1.0.0",
-			"matchManagers": ["github-actions"],
-			"matchUpdateTypes": ["minor", "patch"],
-			"autoApprove": true,
-			"automerge": false
+			description: "Github minor/patch updates",
+			matchCurrentVersion: ">= 1.0.0",
+			matchManagers: ["github-actions"],
+			matchUpdateTypes: ["minor", "patch"],
+			autoApprove: true,
+			automerge: false,
 		},
 		{
-			"description": "Github major updates",
-			"matchCurrentVersion": ">= 1.0.0",
-			"matchManagers": ["github-actions"],
-			"matchUpdateTypes": ["major"],
-			"automerge": false,
-			"autoApprove": true
+			description: "Github major updates",
+			matchCurrentVersion: ">= 1.0.0",
+			matchManagers: ["github-actions"],
+			matchUpdateTypes: ["major"],
+			automerge: false,
+			autoApprove: true,
 		},
 		{
-			"description": "All GitHub updates",
-			"matchManagers": ["github-actions"],
-			"semanticCommitType": "ci"
+			description: "All GitHub updates",
+			matchManagers: ["github-actions"],
+			semanticCommitType: "ci",
 		},
 		{
-			"description": "All prerelease",
-			"matchCurrentVersion": "< 1.0.0",
-			"automerge": false,
-			"autoApprove": false
+			description: "All prerelease",
+			matchCurrentVersion: "< 1.0.0",
+			automerge: false,
+			autoApprove: false,
 		},
 		{
-			"matchDepTypes": ["action"],
-			"pinDigests": false
+			matchDepTypes: ["action"],
+			pinDigests: false,
 		},
 		{
-			"matchManagers": ["github-actions"],
-			"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{prettyNewVersion}}{{else}}{{#if isSingleVersion}}{{prettyNewVersion}}{{else}}{{#if newValue}}{{{prettyNewVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
+			matchManagers: ["github-actions"],
+			commitMessageExtra: "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{prettyNewVersion}}{{else}}{{#if isSingleVersion}}{{prettyNewVersion}}{{else}}{{#if newValue}}{{{prettyNewVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}",
 		},
 		{
-			"matchManagers": ["npm"],
-			"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{newVersion}}{{else}}{{#if isSingleVersion}}{{newVersion}}{{else}}{{#if newValue}}{{{newVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
-		}
-	]
+			matchManagers: ["npm"],
+			commitMessageExtra: "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{newVersion}}{{else}}{{#if isSingleVersion}}{{newVersion}}{{else}}{{#if newValue}}{{{newVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}",
+		},
+	],
 }
