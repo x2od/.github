@@ -29,7 +29,7 @@
 	"github-actions": {
 		"description": "All Github updates",
 		"automergeType": "pr",
-		"fileMatch": ["^(workflow-templates|\\.(?:github|gitea|forgejo)/workflows)/[^/]+\\.ya?ml$", "(^|/)action\\.ya?ml$"],
+		"managerFilePatterns": ["^(workflow-templates|\\.(?:github|gitea|forgejo)/workflows)/[^/]+\\.ya?ml$", "(^|/)action\\.ya?ml$"],
 		"semanticCommitType": "ci"
 	},
 	"major": { "autoApprove": true, "automerge": false },

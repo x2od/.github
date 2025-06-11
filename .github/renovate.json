@@ -1,5 +1,9 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+<<<<<<< renovate/reconfigure
 	"extends": ["github>x2od/.github:renovate.json5"],
 	"packageRules": []
+=======
+	"extends": ["github>x2od/.github:renovate.json5"]
+>>>>>>> main
 }
