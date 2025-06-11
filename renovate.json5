@@ -29,13 +29,12 @@
 	"github-actions": {
 		"description": "All Github updates",
 		"automergeType": "pr",
-		"fileMatch": ["^(workflow-templates|\\.(?:github|gitea|forgejo)/workflows)/[^/]+\\.ya?ml$", "(^|/)action\\.ya?ml$"],
+		"managerFilePatterns": ["^(workflow-templates|\\.(?:github|gitea|forgejo)/workflows)/[^/]+\\.ya?ml$", "(^|/)action\\.ya?ml$"],
 		"semanticCommitType": "ci"
 	},
-	"major": {
-		"autoApprove": true,
-		"automerge": false
-	},
+	"major": { "autoApprove": true, "automerge": false },
+	"patch": { "autoApprove": true, "automerge": false, "labels": ["auto-merged"] },
+	"minor": { "autoApprove": true, "automerge": false, "labels": ["auto-merged"] },
 	"pre-commit": { "enabled": true },
 	"vulnerabilityAlerts": { "enabled": true },
 	/* "lockFileMaintenance": {
@@ -93,7 +92,9 @@
 		{
 			"description": "All GitHub updates",
 			"matchManagers": ["github-actions"],
-			"semanticCommitType": "ci"
+			"semanticCommitType": "ci",
+			//"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{prettyNewVersion}}{{else}}{{#if isSingleVersion}}{{prettyNewVersion}}{{else}}{{#if newValue}}{{{prettyNewVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
+			"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{newVersion}}{{else}}{{#if isSingleVersion}}{{newVersion}}{{else}}{{#if newValue}}{{{newVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
 		},
 		{
 			"description": "All prerelease",
@@ -104,10 +105,6 @@
 		{
 			"matchDepTypes": ["action"],
 			"pinDigests": false
-		},
-		{
-			"matchManagers": ["github-actions"],
-			"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{prettyNewVersion}}{{else}}{{#if isSingleVersion}}{{prettyNewVersion}}{{else}}{{#if newValue}}{{{prettyNewVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
 		},
 		{
 			"matchManagers": ["npm"],

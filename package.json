@@ -1,15 +1,15 @@
 {
-	"name": "dschach-github",
+	"name": "x2od-github",
 	"private": true,
 	"version": "1.0.0",
-	"description": "Template files for personal repos",
+	"description": "Template files for x2od organization repos",
 	"scripts": {
 		"precommit": "lint-staged",
 		"prepare": "husky",
 		"prettier:verify": "prettier --list-different \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
 		"prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
 		"prune": "git branch | grep -v \"main\" | xargs git branch -D",
-		"renovate:validate": "npm install -i renovate && npx renovate-config-validator && npm uninstall renovate"
+		"renovate:validate": "npm install -D renovate && npx renovate-config-validator && npm uninstall renovate"
 	},
 	"devDependencies": {
 		"@prettier/plugin-xml": "^3.4.1",
