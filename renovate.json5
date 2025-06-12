@@ -106,11 +106,15 @@
 		},
 		{
 			"matchPackageNames": ["/eslint/"],
-			"groupName": "eslint"
+			"groupName": "eslint",
+			"semanticCommitType": "ci",
+			"semanticCommitScope": "eslint"
 		},
 		{
 			"matchPackageNames": ["/jest/"],
-			"groupName": "jest"
+			"groupName": "jest",
+			"semanticCommitType": "ci",
+			"semanticCommitScope": "jest"
 		}
 	]
 }
