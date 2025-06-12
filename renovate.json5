@@ -107,6 +107,10 @@
 		{
 			"matchPackageNames": ["/eslint/"],
 			"groupName": "eslint"
+		},
+		{
+			"matchPackageNames": ["/jest/"],
+			"groupName": "jest"
 		}
 	]
 }
