@@ -37,13 +37,6 @@
 	"minor": { "autoApprove": true, "automerge": false },
 	"pre-commit": { "enabled": true },
 	"vulnerabilityAlerts": { "enabled": true },
-	/* "lockFileMaintenance": {
-		"semanticCommitScope": "lock-file",
-		"semanticCommitType": "chore",
-		"enabled": true,
-		"autoApprove": false,
-		"automerge": true
-	}, */
 	"lockFileMaintenance": { "enabled": false },
 	"packageRules": [
 		{
@@ -110,6 +103,10 @@
 		{
 			"matchManagers": ["npm"],
 			"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{newVersion}}{{else}}{{#if isSingleVersion}}{{newVersion}}{{else}}{{#if newValue}}{{{newVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
+		},
+		{
+			"matchPackageNames": ["/eslint/"],
+			"groupName": "eslint"
 		}
 	]
 }
