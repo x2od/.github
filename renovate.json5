@@ -21,6 +21,8 @@
 	"rangeStrategy": "bump",
 	"commitBodyTable": true,
 	"semanticCommits": "enabled",
+	"semanticCommitScope": "{{depName}}",
+	"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{newVersion}}{{else}}{{#if isSingleVersion}}{{newVersion}}{{else}}{{#if newValue}}{{{newVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}",
 	"dependencyDashboard": true,
 	"dependencyDashboardAutoclose": true,
 	"configWarningReuseIssue": false,
@@ -87,8 +89,7 @@
 			"matchManagers": ["github-actions"],
 			"semanticCommitType": "ci",
 			"semanticCommitScope": "{{depName}}",
-			//"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{prettyNewVersion}}{{else}}{{#if isSingleVersion}}{{prettyNewVersion}}{{else}}{{#if newValue}}{{{prettyNewVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
-			"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{newVersion}}{{else}}{{#if isSingleVersion}}{{newVersion}}{{else}}{{#if newValue}}{{{newVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
+			"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{prettyNewVersion}}{{else}}{{#if isSingleVersion}}{{prettyNewVersion}}{{else}}{{#if newValue}}{{{prettyNewVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
 		},
 		{
 			"description": "All prerelease",
@@ -102,19 +103,19 @@
 		},
 		{
 			"matchManagers": ["npm"],
-			"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{newVersion}}{{else}}{{#if isSingleVersion}}{{newVersion}}{{else}}{{#if newValue}}{{{newVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
-		},
-		{
-			"matchPackageNames": ["/eslint/"],
-			"groupName": "eslint",
-			"semanticCommitType": "ci",
-			"semanticCommitScope": "eslint"
+			"description": "All npm updates. Note commit extra message set globally."
 		},
 		{
 			"matchPackageNames": ["/jest/"],
 			"groupName": "jest",
 			"semanticCommitType": "ci",
 			"semanticCommitScope": "jest"
+		},
+		{
+			"matchPackageNames": ["/eslint/"],
+			"groupName": "eslint",
+			"semanticCommitType": "ci",
+			"semanticCommitScope": "eslint"
 		}
 	]
 }
