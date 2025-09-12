@@ -44,9 +44,7 @@
 		{
 			"description": "all minor/patch updates",
 			"matchCurrentVersion": ">= 1.0.0",
-			"matchUpdateTypes": ["minor", "patch"],
-			"automerge": false,
-			"autoApprove": true
+			"matchUpdateTypes": ["minor", "patch"]
 		},
 		{
 			"description": "npm dependencies (rare)",
@@ -72,9 +70,7 @@
 			"description": "Github minor/patch updates",
 			"matchCurrentVersion": ">= 1.0.0",
 			"matchManagers": ["github-actions"],
-			"matchUpdateTypes": ["minor", "patch"],
-			"autoApprove": true,
-			"automerge": false
+			"matchUpdateTypes": ["minor", "patch"]
 		},
 		{
 			"description": "Github major updates",
@@ -103,7 +99,15 @@
 		},
 		{
 			"matchManagers": ["npm"],
-			"description": "All npm updates. Note commit extra message set globally."
+			"description": "All npm updates. Note commit extra message was set globally."
+		},
+		{
+			"description": "Minor updates to automerge, to save time but allow some clutter, overriding all above rules",
+			"matchManagers": ["npm"],
+			"matchPackageNames": ["/prettier/", "lint-staged", "marked", "mocha", "husky", "release-please", "/@x2od/"],
+			"matchUpdateTypes": ["minor"],
+			"automerge": true,
+			"autoApprove": true
 		},
 		{
 			"matchPackageNames": ["/jest/"],
