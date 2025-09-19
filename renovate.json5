@@ -108,18 +108,6 @@
 			"matchUpdateTypes": ["minor"],
 			"automerge": true,
 			"autoApprove": true
-		},
-		{
-			"matchPackageNames": ["/jest/"],
-			"groupName": "jest",
-			"semanticCommitType": "ci",
-			"semanticCommitScope": "jest"
-		},
-		{
-			"matchPackageNames": ["/eslint/"],
-			"groupName": "eslint",
-			"semanticCommitType": "ci",
-			"semanticCommitScope": "eslint"
 		}
 	]
 }
