@@ -37,7 +37,7 @@
 		},
 		{
 			"files": "*.json5",
-			"options": { "quote-props": "consistent", "parser": "jsonc" }
+			"options": { "quoteProps": "consistent", "parser": "json5" }
 		}
 	],
 	"plugins": ["@prettier/plugin-xml"],
