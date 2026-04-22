@@ -7,7 +7,7 @@
 		"replacements:all",
 		"workarounds:all",
 		"docker:pinDigests",
-		":semanticCommitScope({{depName}})",
+		//":semanticCommitScope({{depName}})",
 		":approveMajorUpdates",
 		":separateMultipleMajorReleases",
 		":widenPeerDependencies"
@@ -32,9 +32,8 @@
 		"automergeType": "pr",
 		"managerFilePatterns": ["^(workflow-templates|\\.(?:github|gitea|forgejo)/workflows)/[^/]+\\.ya?ml$", "(^|/)action\\.ya?ml$"],
 		"semanticCommitType": "ci",
-		"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{newVersion}}{{else}}{{#if isSingleVersion}}{{newVersion}}{{else}}{{#if newValue}}{{{newVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}",
-		"minor": { "enabled": false },
-		"patch": { "enabled": false }
+		"semanticCommitScope": "{{depName}}",
+		"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{prettyNewMajor}}{{else}}{{#if isSingleVersion}}{{prettyNewVersion}}{{else}}{{#if newValue}}{{{prettyNewVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
 	},
 	"major": { "autoApprove": true, "automerge": false, "addLabels": ["renovate", "major"] },
 	"patch": { "autoApprove": true, "automerge": false, "addLabels": ["renovate", "patch"] },
@@ -50,7 +49,7 @@
 		},
 		{
 			"description": "npm dependencies (rare)",
-			"semanticCommitType": "build",
+			"semanticCommitType": "chore",
 			"semanticCommitScope": "{{depName}}",
 			"matchManagers": ["npm"],
 			"matchDepTypes": ["dependencies"]
@@ -61,6 +60,12 @@
 			"semanticCommitScope": "{{depName}}",
 			"matchManagers": ["npm"],
 			"matchDepTypes": ["devDependencies", "optionalDependencies"]
+		},
+		{
+			"description": "npm peerDependencies",
+			"matchManagers": ["npm"],
+			"matchDepTypes": ["peerDependencies"],
+			"rangeStrategy": "widen"
 		},
 		{
 			"description": "renovate updates require approval",
@@ -100,18 +105,13 @@
 		},
 		{
 			"description": "All GitHub updates",
-			"matchManagers": ["github-actions"],
-			"semanticCommitType": "ci",
-			"semanticCommitScope": "{{depName}}"
+			"matchManagers": ["github-actions"]
 		},
 		{
 			"description": "All prerelease",
 			"matchCurrentVersion": "< 1.0.0",
 			"automerge": false,
 			"autoApprove": false
-		},
-		{
-			"matchDepTypes": ["action"]
 		},
 		{
 			"matchManagers": ["npm"],
