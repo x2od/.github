@@ -3,15 +3,14 @@
 	"description": "Custom renovate rules for @x2od",
 	"extends": [
 		":ignoreModulesAndTests",
-		"group:monorepos",
-		"group:recommended",
+		"group:react",
 		"replacements:all",
 		"workarounds:all",
 		"docker:pinDigests",
-		//"helpers:pinGitHubActionDigests",
-		":semanticCommits",
 		":semanticCommitScope({{depName}})",
-		":approveMajorUpdates"
+		":approveMajorUpdates",
+  		":separateMultipleMajorReleases",
+		":widenPeerDependencies"
 	],
 	"schedule": [],
 	"timezone": "America/Los_Angeles",
@@ -32,11 +31,14 @@
 		"description": "All Github updates",
 		"automergeType": "pr",
 		"managerFilePatterns": ["^(workflow-templates|\\.(?:github|gitea|forgejo)/workflows)/[^/]+\\.ya?ml$", "(^|/)action\\.ya?ml$"],
-		"semanticCommitType": "ci"
+		"semanticCommitType": "ci",
+		"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{newVersion}}{{else}}{{#if isSingleVersion}}{{newVersion}}{{else}}{{#if newValue}}{{{newVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}",
+		"minor": { "enabled": false },
+		"patch": { "enabled": false }
 	},
-	"major": { "autoApprove": true, "automerge": false },
-	"patch": { "autoApprove": true, "automerge": false },
-	"minor": { "autoApprove": true, "automerge": false },
+	"major": { "autoApprove": true, "automerge": false, "addLabels": ["renovate", "major"] },
+	"patch": { "autoApprove": true, "automerge": false, "addLabels": ["renovate", "patch"] },
+	"minor": { "autoApprove": true, "automerge": false, "addLabels": ["renovate", "minor"] },
 	"pre-commit": { "enabled": true },
 	"vulnerabilityAlerts": { "enabled": true },
 	"lockFileMaintenance": { "enabled": false },
@@ -67,24 +69,25 @@
 			"dependencyDashboardApproval": true
 		},
 		{
-		  "matchPackageNames": ["/jest/"],
-		  "groupName": "jest",
+			"matchPackageNames": ["/jest/"],
+			"groupName": "jest",
 			"matchManagers": ["npm"],
 			"semanticCommitType": "build",
 			"semanticCommitScope": "jest packages"
 		},
 		{
 			"matchPackageNames": ["/eslint/", "!eslint", "globals"],
-		  "groupName": "eslint plugins",
+			"groupName": "eslint plugins",
 			"matchManagers": ["npm"],
-		  "semanticCommitType": "build",
-		  "semanticCommitScope": "eslint plugins"
+			"semanticCommitType": "build",
+			"semanticCommitScope": "eslint plugins"
 		},
 		{
 			"description": "Github minor/patch updates",
 			"matchCurrentVersion": ">= 1.0.0",
 			"matchManagers": ["github-actions"],
-			"matchUpdateTypes": ["minor", "patch"]
+			"matchUpdateTypes": ["minor", "patch"],
+			"enabled" false
 		},
 		{
 			"description": "Github major updates",
@@ -92,14 +95,14 @@
 			"matchManagers": ["github-actions"],
 			"matchUpdateTypes": ["major"],
 			"automerge": false,
-			"autoApprove": true
+			"autoApprove": true,
+			"dependencyDashboardApproval": true
 		},
 		{
 			"description": "All GitHub updates",
 			"matchManagers": ["github-actions"],
 			"semanticCommitType": "ci",
-			"semanticCommitScope": "{{depName}}",
-      "commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{newVersion}}{{else}}{{#if isSingleVersion}}{{newVersion}}{{else}}{{#if newValue}}{{{newVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
+			"semanticCommitScope": "{{depName}}"
 		},
 		{
 			"description": "All prerelease",
@@ -109,7 +112,6 @@
 		},
 		{
 			"matchDepTypes": ["action"],
-			"pinDigests": false
 		},
 		{
 			"matchManagers": ["npm"],
