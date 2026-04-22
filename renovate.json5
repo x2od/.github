@@ -9,7 +9,7 @@
 		"docker:pinDigests",
 		":semanticCommitScope({{depName}})",
 		":approveMajorUpdates",
-  		":separateMultipleMajorReleases",
+		":separateMultipleMajorReleases",
 		":widenPeerDependencies"
 	],
 	"schedule": [],
@@ -87,7 +87,7 @@
 			"matchCurrentVersion": ">= 1.0.0",
 			"matchManagers": ["github-actions"],
 			"matchUpdateTypes": ["minor", "patch"],
-			"enabled" false
+			"enabled": false
 		},
 		{
 			"description": "Github major updates",
@@ -111,7 +111,7 @@
 			"autoApprove": false
 		},
 		{
-			"matchDepTypes": ["action"],
+			"matchDepTypes": ["action"]
 		},
 		{
 			"matchManagers": ["npm"],
