@@ -37,7 +37,11 @@
 		},
 		{
 			"files": "*.json5",
-			"options": { "quoteProps": "consistent", "parser": "json5" }
+			"options": {
+				"quoteProps": "preserve",
+				"parser": "json5",
+				"singleQuote": false
+			}
 		}
 	],
 	"plugins": ["@prettier/plugin-xml"],
