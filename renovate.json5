@@ -48,7 +48,7 @@
 		},
 		{
 			"description": "npm dependencies (rare)",
-			"semanticCommitType": "deps",
+			"semanticCommitType": "build",
 			"semanticCommitScope": "{{depName}}",
 			"matchManagers": ["npm"],
 			"matchDepTypes": ["dependencies"]
@@ -65,6 +65,20 @@
 			"matchManagers": ["npm"],
 			"matchPackageNames": ["renovate"],
 			"dependencyDashboardApproval": true
+		},
+		{
+		  "matchPackageNames": ["/jest/"],
+		  "groupName": "jest",
+			"matchManagers": ["npm"],
+			"semanticCommitType": "build",
+			"semanticCommitScope": "jest packages"
+		},
+		{
+			"matchPackageNames": ["/eslint/", "!eslint", "globals"],
+		  "groupName": "eslint plugins",
+			"matchManagers": ["npm"],
+		  "semanticCommitType": "build",
+		  "semanticCommitScope": "eslint plugins"
 		},
 		{
 			"description": "Github minor/patch updates",
@@ -85,7 +99,7 @@
 			"matchManagers": ["github-actions"],
 			"semanticCommitType": "ci",
 			"semanticCommitScope": "{{depName}}",
-			"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{prettyNewVersion}}{{else}}{{#if isSingleVersion}}{{prettyNewVersion}}{{else}}{{#if newValue}}{{{prettyNewVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
+      "commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{newVersion}}{{else}}{{#if isSingleVersion}}{{newVersion}}{{else}}{{#if newValue}}{{{newVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
 		},
 		{
 			"description": "All prerelease",
