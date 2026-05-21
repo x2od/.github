@@ -1,4 +1,16 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
-	"extends": ["github>x2od/.github:renovate.json5"]
+	"extends": ["github>x2od/.github:renovate.json5"],
+	"lockFileMaintenance": {
+		"enabled": true,
+		"recreateWhen": "always",
+		"rebaseStalePrs": true,
+		"branchTopic": "lock-file-maintenance",
+		"commitMessageAction": "Lock file maintenance",
+		"semanticCommitType": "chore",
+		"schedule": ["before 4am on monday"],
+		"prBodyDefinitions": {
+			"Change": "All locks refreshed"
+		}
+	}
 }
