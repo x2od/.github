@@ -51,7 +51,8 @@
 		},
 		{
 			"matchManagers": ["npm"],
-			"description": "All npm updates. Note commit extra message was set globally."
+			"description": "All npm updates. Note commit extra message was set globally.",
+			"rangeStrategy": "bump"
 		},
 		{
 			"description": "npm dependencies (rare)",
