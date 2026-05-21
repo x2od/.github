@@ -81,7 +81,8 @@
 			"description": "renovate updates require approval",
 			"matchManagers": ["npm"],
 			"matchPackageNames": ["renovate"],
-			"dependencyDashboardApproval": true
+			"dependencyDashboardApproval": true,
+			"autoApprove": false
 		},
 		{
 			"matchPackageNames": ["/jest/"],
@@ -99,14 +100,14 @@
 		},
 		{
 			"description": "Github minor/patch updates",
-			"matchCurrentVersion": ">= 1.0.0",
+			"matchCurrentVersion": ">=1.x",
 			"matchManagers": ["github-actions"],
-			"matchUpdateTypes": ["minor", "patch"],
+			"matchUpdateTypes": ["minor", "patch", "digest", "pinDigest"],
 			"enabled": false
 		},
 		{
 			"description": "Github major updates",
-			"matchCurrentVersion": ">= 1.0.0",
+			"matchCurrentVersion": ">=1.x",
 			"matchManagers": ["github-actions"],
 			"matchUpdateTypes": ["major"],
 			"automerge": false,
@@ -120,14 +121,14 @@
 		},
 		{
 			"description": "All prerelease",
-			"matchCurrentVersion": "< 1.0.0",
+			"matchCurrentVersion": "<1.0.0",
 			"automerge": false,
 			"autoApprove": false
 		},
 		{
-			"description": "Minor/Paatch updates to automerge, to save time but allow some clutter, overriding all above rules",
+			"description": "Minor/Patch updates to automerge, to save time but allow some clutter, overriding all above rules",
 			"matchManagers": ["npm"],
-			"matchPackageNames": ["/prettier/", "lint-staged", "marked", "mocha", "husky", "release-please", "/@x2od/"],
+			"matchPackageNames": ["/prettier/", "lint-staged", "marked", "mocha", "husky", "release-please", "/^@x2od/"],
 			"matchUpdateTypes": ["minor", "patch"],
 			"automerge": true,
 			"autoApprove": true,
