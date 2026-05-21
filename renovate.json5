@@ -16,6 +16,7 @@
 	"timezone": "America/Los_Angeles",
 	"configMigration": true,
 	"automergeType": "pr",
+	"automergeStrategy": "squash",
 	"commitMessageLowerCase": "auto",
 	//"rangeStrategy": "bump",
 	"commitBodyTable": true,
@@ -33,6 +34,7 @@
 		"managerFilePatterns": ["^(workflow-templates|\\.(?:github|gitea|forgejo)/workflows)/[^/]+\\.ya?ml$", "(^|/)action\\.ya?ml$"],
 		"semanticCommitType": "ci",
 		"semanticCommitScope": "{{depName}}",
+		"commitMessageTopic": "action {{depName}}",
 		"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{prettyNewMajor}}{{else}}{{#if isSingleVersion}}{{prettyNewVersion}}{{else}}{{#if newValue}}{{{prettyNewVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
 	},
 	"major": { "autoApprove": true, "automerge": false, "addLabels": ["renovate", "major"] },
@@ -70,6 +72,7 @@
 		{
 			"description": "npm peerDependencies",
 			"matchManagers": ["npm"],
+			"semanticCommitType": "build",
 			"matchDepTypes": ["peerDependencies"],
 			"rangeStrategy": "widen",
 			"commitMessageTopic": "peerDependency {{depName}}"
@@ -113,8 +116,7 @@
 		},
 		{
 			"description": "All GitHub updates",
-			"matchManagers": ["github-actions"],
-			"commitMessageTopic": "action {{depName}}"
+			"matchManagers": ["github-actions"]
 		},
 		{
 			"description": "All prerelease",
@@ -123,12 +125,13 @@
 			"autoApprove": false
 		},
 		{
-			"description": "Minor updates to automerge, to save time but allow some clutter, overriding all above rules",
+			"description": "Minor/Paatch updates to automerge, to save time but allow some clutter, overriding all above rules",
 			"matchManagers": ["npm"],
 			"matchPackageNames": ["/prettier/", "lint-staged", "marked", "mocha", "husky", "release-please", "/@x2od/"],
-			"matchUpdateTypes": ["minor"],
+			"matchUpdateTypes": ["minor", "patch"],
 			"automerge": true,
-			"autoApprove": true
+			"autoApprove": true,
+			"addLabels": ["auto-merged"]
 		}
 	]
 }
