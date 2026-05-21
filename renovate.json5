@@ -17,7 +17,7 @@
 	"configMigration": true,
 	"automergeType": "pr",
 	"commitMessageLowerCase": "auto",
-	"rangeStrategy": "bump",
+	//"rangeStrategy": "bump",
 	"commitBodyTable": true,
 	"semanticCommits": "enabled",
 	"semanticCommitScope": "{{depName}}",
@@ -101,7 +101,8 @@
 			"matchUpdateTypes": ["major"],
 			"automerge": false,
 			"autoApprove": true,
-			"dependencyDashboardApproval": true
+			"dependencyDashboardApproval": true,
+			"commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{prettyNewMajor}}{{else}}{{#if isSingleVersion}}{{prettyNewVersion}}{{else}}{{#if newValue}}{{{prettyNewVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}"
 		},
 		{
 			"description": "All GitHub updates",
