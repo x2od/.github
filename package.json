@@ -13,7 +13,7 @@
 	},
 	"devDependencies": {
 		"@prettier/plugin-xml": "^3.4.2",
-		"@x2od/prettier-config": "^0.0.6",
+		"@x2od/prettier-config": "^0.0.7",
 		"husky": "^9.1.7",
 		"lint-staged": "^17.0.5",
 		"prettier": "^3.8.3",
