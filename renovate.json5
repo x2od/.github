@@ -48,24 +48,31 @@
 			"matchUpdateTypes": ["minor", "patch"]
 		},
 		{
+			"matchManagers": ["npm"],
+			"description": "All npm updates. Note commit extra message was set globally."
+		},
+		{
 			"description": "npm dependencies (rare)",
-			"semanticCommitType": "chore",
+			"semanticCommitType": "deps",
 			"semanticCommitScope": "{{depName}}",
 			"matchManagers": ["npm"],
-			"matchDepTypes": ["dependencies"]
+			"matchDepTypes": ["dependencies"],
+			"commitMessageTopic": "dependency {{depName}}"
 		},
 		{
 			"description": "npm devDependencies",
 			"semanticCommitType": "build",
 			"semanticCommitScope": "{{depName}}",
 			"matchManagers": ["npm"],
-			"matchDepTypes": ["devDependencies", "optionalDependencies"]
+			"matchDepTypes": ["devDependencies", "optionalDependencies"],
+			"commitMessageTopic": "devDependency {{depName}}"
 		},
 		{
 			"description": "npm peerDependencies",
 			"matchManagers": ["npm"],
 			"matchDepTypes": ["peerDependencies"],
-			"rangeStrategy": "widen"
+			"rangeStrategy": "widen",
+			"commitMessageTopic": "peerDependency {{depName}}"
 		},
 		{
 			"description": "renovate updates require approval",
@@ -106,17 +113,14 @@
 		},
 		{
 			"description": "All GitHub updates",
-			"matchManagers": ["github-actions"]
+			"matchManagers": ["github-actions"],
+			"commitMessageTopic": "action {{depName}}"
 		},
 		{
 			"description": "All prerelease",
 			"matchCurrentVersion": "< 1.0.0",
 			"automerge": false,
 			"autoApprove": false
-		},
-		{
-			"matchManagers": ["npm"],
-			"description": "All npm updates. Note commit extra message was set globally."
 		},
 		{
 			"description": "Minor updates to automerge, to save time but allow some clutter, overriding all above rules",
