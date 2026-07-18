@@ -15,7 +15,7 @@
 		"@prettier/plugin-xml": "^3.4.2",
 		"@x2od/prettier-config": "^0.0.8",
 		"husky": "^9.1.7",
-		"lint-staged": "^17.0.8",
+		"lint-staged": "^17.1.0",
 		"prettier": "^3.9.5",
 		"renovate": "^43.139.6"
 	},
