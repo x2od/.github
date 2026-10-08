@@ -132,8 +132,7 @@
 			"matchPackageNames": ["/prettier/", "lint-staged", "marked", "mocha", "husky", "release-please", "/^@x2od/"],
 			"matchUpdateTypes": ["minor", "patch"],
 			"automerge": true,
-			"autoApprove": true,
-			"addLabels": ["auto-merged"]
+			"autoApprove": true
 		}
 	]
 }
