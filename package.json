@@ -16,7 +16,7 @@
 		"@x2od/prettier-config": "^0.3.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^17.6.0",
-		"prettier": "^3.9.9",
+		"prettier": "^3.9.10",
 		"renovate": "^44.126.1"
 	},
 	"lint-staged": {
