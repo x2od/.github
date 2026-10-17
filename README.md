@@ -139,7 +139,7 @@ Store the PAT 2 times, with the same name and the same value: as a **Dependabot 
 | Dependabot (it opens or updates a pull request)                           | Dependabot secrets only. This is also true for `pull_request_target`. | `update`             |
 | A person or a PAT (for example, the merge that starts the `closed` event) | Actions secrets only                                                  | `labels-after-merge` |
 
-On the GitHub Free plan, organization secrets are available only to public repositories. A private repository in a free organization (for example, `x2od/BaseSFDXProject`) must store both secrets in the repository itself.
+On the GitHub Free plan, only organization **Actions** secrets are limited to public repositories. An organization **Dependabot** secret can also be available to private repositories. So a private repository in a free organization (for example, `x2od/BaseSFDXProject`) must store the Actions secret in the repository itself. Its Dependabot secret can come from the organization or from the repository. A repository secret overrides an organization secret with the same name.
 
 > [!WARNING]
 > If the PAT is only an Actions secret, the `update` job gets an empty `token` and uses the `GITHUB_TOKEN`. The job summary then shows `Token: GITHUB_TOKEN`, and the approval and merge show `github-actions[bot]`.

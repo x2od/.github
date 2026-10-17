@@ -117,9 +117,12 @@
 # uses the GITHUB_TOKEN. The job summary then shows "Token: GITHUB_TOKEN".
 # The x2od organization uses the secret name DEPENDABOT_TOKEN_X2OD.
 #
-# On the GitHub Free plan, organization secrets are available only to public
-# repositories. A private repository in a free organization must store both
-# secrets in the repository itself.
+# On the GitHub Free plan, organization Actions secrets are available only to
+# public repositories. An organization Dependabot secret can also be available to
+# private repositories. So a private repository in a free organization must store
+# the Actions secret in the repository itself. Its Dependabot secret can come from
+# the organization or from the repository. A repository secret overrides an
+# organization secret with the same name.
 #
 # Fine-grained PAT (recommended). Resource owner: the owner of the calling
 # repositories. Repository access: only the repositories that call this workflow.
