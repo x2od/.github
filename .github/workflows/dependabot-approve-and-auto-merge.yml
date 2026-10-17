@@ -38,6 +38,9 @@ jobs:
       automerge-patch: true
       automerge-security: true
     secrets:
+      # Organization secret. Store it 2 times, with this same name: as a Dependabot
+      # secret (runs that Dependabot starts can read only Dependabot secrets) and as
+      # an Actions secret (for the run after the merge).
       token: ${{ secrets.DEPENDABOT_TOKEN_X2OD }}
 
   development:

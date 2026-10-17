@@ -43,9 +43,9 @@
 # Rules for the caller:
 #
 #   - Use the "pull_request_target" event, not "pull_request". On "pull_request",
-#     Dependabot runs get a read-only GITHUB_TOKEN and no Actions secrets.
-#     This workflow never checks out or runs code from the pull request, so
-#     "pull_request_target" is safe here.
+#     Dependabot runs get a read-only GITHUB_TOKEN. On "pull_request_target", the
+#     GITHUB_TOKEN can write. This workflow never checks out or runs code from the
+#     pull request, so "pull_request_target" is safe here.
 #   - Include all 5 event types above. "closed" is necessary for task 4.
 #   - Give the caller job all 3 permissions above. A called workflow cannot get
 #     more permissions than its caller. If one permission is missing, GitHub
@@ -102,8 +102,20 @@
 # A personal access token (PAT) removes both limits. The approval, the merge, and
 # the title edit then show your user name, not "github-actions[bot]".
 #
-# Store the PAT as an Actions secret (not a Dependabot secret) in the organization
-# or in the repository. The x2od organization has DEPENDABOT_TOKEN_X2OD.
+# Where to store the PAT: as a Dependabot secret AND as an Actions secret, with the
+# same name and the same value. Store both in the organization or in the repository
+# (Settings > Secrets and variables > Dependabot, and > Actions).
+#
+#   - When Dependabot starts a run (it opens or updates a PR), the run can read only
+#     Dependabot secrets. This is also true for "pull_request_target". The "update"
+#     job runs this way, so it needs the Dependabot secret.
+#   - When a person or a PAT starts a run (for example, the merge that starts the
+#     "closed" event), the run can read only Actions secrets. The
+#     "labels-after-merge" job runs this way, so it needs the Actions secret.
+#
+# If the PAT is only an Actions secret, the "update" job gets an empty "token" and
+# uses the GITHUB_TOKEN. The job summary then shows "Token: GITHUB_TOKEN".
+# The x2od organization uses the secret name DEPENDABOT_TOKEN_X2OD.
 #
 # Fine-grained PAT (recommended). Resource owner: the owner of the calling
 # repositories. Repository access: only the repositories that call this workflow.
@@ -225,7 +237,8 @@ on:
     secrets:
       token:
         description: >-
-          Optional PAT. If empty, the workflow uses the GITHUB_TOKEN. See the comments
+          Optional PAT. Store it as a Dependabot secret and as an Actions secret, with
+          the same name. If empty, the workflow uses the GITHUB_TOKEN. See the comments
           at the top of this file for the necessary permissions.
         required: false
 
@@ -344,7 +357,7 @@ jobs:
             echo "| Ecosystem | \`${ECOSYSTEM:-unknown}\` |"
             echo "| Update type | \`${UPDATE_TYPE:-not semver}\` |"
             echo "| Dependency type | \`${DEPENDENCY_TYPE:-unknown}\` |"
-            echo "| Token | $([[ "$HAS_TOKEN" == "true" ]] && echo "\`token\` secret (\`${TOKEN_USER:-unknown user}\`)" || echo "GITHUB_TOKEN") |"
+            echo "| Token | $([[ "$HAS_TOKEN" == "true" ]] && echo "\`token\` secret (\`${TOKEN_USER:-unknown user}\`)" || echo "GITHUB_TOKEN (the \`token\` secret is empty; runs that Dependabot starts read only Dependabot secrets)") |"
             echo
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -486,7 +499,7 @@ jobs:
           # Security alert row
           if [[ "$APPROVE_SECURITY" == "true" || "$MERGE_SECURITY" == "true" ]]; then
             if [[ "$HAS_TOKEN" != "true" ]]; then
-              summary "- :information_source: Security alert: not checked. The alert lookup needs the \`token\` secret."
+              summary "- :information_source: Security alert: not checked. The alert lookup needs the \`token\` secret, stored as a Dependabot secret."
             elif [[ "$ALERT_OUTCOME" == "failure" ]]; then
               summary "- :warning: Security alert: the lookup failed. Give the token \`Dependabot alerts: Read-only\`."
             elif [[ "$security" == "true" ]]; then
@@ -636,7 +649,7 @@ jobs:
                 summary "- :hourglass: Turned on auto-merge (\`$MERGE_METHOD\`). GitHub merges the PR after the required checks and reviews pass."
                 if [[ "$HAS_TOKEN" != "true" ]]; then
                   summary "- :information_source: This run uses the GITHUB_TOKEN. GitHub does not start a workflow run for that merge." \
-                    "  The \`dependabot\` and \`auto-merged\` labels will not be added after the merge. Pass the \`token\` secret to get them."
+                    "  The \`dependabot\` and \`auto-merged\` labels will not be added after the merge. Pass the \`token\` secret (as a Dependabot secret and an Actions secret) to get them."
                 fi
               fi
               exit 0
