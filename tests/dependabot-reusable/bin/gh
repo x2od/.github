@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Fake gh. Logs each call and answers from STUB_* environment variables.
+echo "gh $*" >> "$GH_LOG"
+args="$*"
+fail() { echo "$1" >&2; exit "${2:-1}"; }
+case "$args" in
+  "pr view "*"--json title --jq .title")
+    [[ -n "$STUB_TITLE_ERR" ]] && fail "$STUB_TITLE_ERR"
+    echo "$STUB_TITLE" ;;
+  "api -X PATCH repos/"*"/pulls/"*)
+    [[ -n "$STUB_PATCH_ERR" ]] && fail "$STUB_PATCH_ERR"; : ;;
+  "api repos/"*"/labels/"*" --silent")
+    [[ "$args" == *"/labels/auto-merged "* && -n "$STUB_AUTOMERGED_LABEL_MISSING" ]] && fail "HTTP 404: Not Found"
+    [[ "$args" == *"/labels/dependabot "* && -n "$STUB_DEPENDABOT_LABEL_MISSING" ]] && fail "HTTP 404: Not Found"
+    : ;;
+  "api repos/"*"/labels -f name="*)
+    [[ -n "$STUB_CREATE_ERR" ]] && fail "$STUB_CREATE_ERR"; : ;;
+  "api repos/"*"/issues/"*"/labels -f labels[]="*)
+    [[ "$args" == *"labels[]=auto-merged"* && -n "$STUB_ADD_AUTOMERGED_ERR" ]] && fail "$STUB_ADD_AUTOMERGED_ERR"
+    [[ "$args" == *"labels[]=dependabot"* && -n "$STUB_ADD_DEPENDABOT_ERR" ]] && fail "$STUB_ADD_DEPENDABOT_ERR"
+    : ;;
+  "api repos/"*"/issues/"*"/labels --jq"*)
+    printf '%b' "$STUB_LABELS" ;;
+  "api --paginate repos/"*"/pulls/"*"/reviews"*)
+    [[ -n "$STUB_REVIEWS_ERR" ]] && fail "$STUB_REVIEWS_ERR"
+    printf '%b' "$STUB_REVIEWS" ;;
+  "api -X POST repos/"*"/pulls/"*"/reviews"*)
+    [[ -n "$STUB_APPROVE_ERR" ]] && fail "$STUB_APPROVE_ERR"; : ;;
+  "pr view "*"--json state,autoMergeRequest"*)
+    [[ -n "$STUB_STATUS_ERR" ]] && fail "$STUB_STATUS_ERR"
+    echo "${STUB_STATUS:-OPEN false}" ;;
+  "pr merge "*)
+    if [[ -n "$STUB_MERGE_FAIL_TIMES" ]]; then
+      m=$(( $(cat "$GH_LOG.merges" 2>/dev/null || echo 0) + 1 )); echo "$m" > "$GH_LOG.merges"
+      ((m <= STUB_MERGE_FAIL_TIMES)) && fail "$STUB_MERGE_FAIL_MSG"
+    fi
+    ;;&
+  "pr merge "*"--auto"*)
+    [[ -n "$STUB_AUTO_MERGE_ERR" ]] && fail "$STUB_AUTO_MERGE_ERR"
+    [[ -n "$STUB_MERGE_ERR" ]] && fail "$STUB_MERGE_ERR"; : ;;
+  "pr merge "*)
+    [[ -n "$STUB_MERGE_ERR" ]] && fail "$STUB_MERGE_ERR"; : ;;
+  "api repos/"*" --jq .allow_auto_merge"*)
+    [[ -n "$STUB_ALLOW_ERR" ]] && fail "$STUB_ALLOW_ERR"
+    echo "${STUB_ALLOW:-true}" ;;
+  "pr view "*"--json headRefOid,state"*)
+    echo "${STUB_HEAD:-abcdef1234567890 OPEN}" ;;
+  "pr checks "*)
+    n=$(( $(cat "$GH_LOG.checks" 2>/dev/null || echo 0) + 1 )); echo "$n" > "$GH_LOG.checks"
+    var="STUB_CHECKS_$n"; out="${!var:-$STUB_CHECKS}"
+    printf '%s' "$out"
+    exit "${STUB_CHECKS_EXIT:-0}" ;;
+  "pr view "*"--json state --jq .state")
+    echo "${STUB_STATE_AFTER:-OPEN}" ;;
+  "api user --jq .login")
+    [[ -n "$STUB_USER_ERR" ]] && fail "$STUB_USER_ERR"
+    echo "$STUB_USER" ;;
+  "api --paginate repos/"*"/issues/"*"/events"*)
+    printf '%b' "$STUB_EVENTS" ;;
+  *) fail "FAKE GH: unknown call: $args" 99 ;;
+esac
