@@ -27,14 +27,6 @@ const config = {
 				useTabs: true
 			}
 		},
-		// PMD rulesets and rule files: whitespace inside elements does not
-		// change meaning, so ignore it when formatting.
-		{
-			files: "**/pmd/**/*.xml",
-			options: {
-				xmlWhitespaceSensitivity: "ignore"
-			}
-		},
 		// Extensionless "gh" scripts are shell files, so format them as sh.
 		{
 			files: "gh",
