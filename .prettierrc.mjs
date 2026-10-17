@@ -26,6 +26,14 @@ const config = {
 			options: {
 				useTabs: true
 			}
+		},
+		// PMD rulesets and rule files: whitespace inside elements does not
+		// change meaning, so ignore it when formatting.
+		{
+			files: "**/pmd/**/*.xml",
+			options: {
+				xmlWhitespaceSensitivity: "ignore"
+			}
 		}
 	]
 };
