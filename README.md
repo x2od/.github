@@ -66,7 +66,7 @@ jobs:
 
 Follow these rules in the calling file:
 
-- Use the `pull_request_target` event, not `pull_request`. On `pull_request`, Dependabot runs get a read-only `GITHUB_TOKEN` and no Actions secrets. The reusable workflow never checks out or runs code from the pull request, so `pull_request_target` is safe here.
+- Use the `pull_request_target` event, not `pull_request`. On `pull_request`, Dependabot runs get a read-only `GITHUB_TOKEN`. On `pull_request_target`, the `GITHUB_TOKEN` can write. The reusable workflow never checks out or runs code from the pull request, so `pull_request_target` is safe here.
 - Include all 5 event types. The `closed` type is necessary for task 4.
 - Give the calling job all 3 permissions. A called workflow cannot get more permissions than its caller. If 1 permission is missing, GitHub does not start the run.
 - Do not use `secrets: inherit`. Pass only the `token` secret.
@@ -132,7 +132,17 @@ The `token` secret is optional. Without it, the workflow uses the `GITHUB_TOKEN`
 - GitHub does not start new workflow runs for actions done with the `GITHUB_TOKEN`. After an auto-merge, no `push` workflow (for example, a release workflow) runs on the base branch, and task 4 cannot run.
 - The workflow cannot find security updates, because the Dependabot alert lookup needs a PAT.
 
-Store the PAT as an Actions secret, not as a Dependabot secret. The x2od organization has the secret `DEPENDABOT_TOKEN_X2OD`.
+Store the PAT 2 times, with the same name and the same value: as a **Dependabot secret** and as an **Actions secret**. Store both in the organization or in the repository (**Settings > Secrets and variables > Dependabot**, and **> Actions**). The x2od organization uses the name `DEPENDABOT_TOKEN_X2OD`.
+
+| Run started by                                                            | Secrets that the run can read                                         | Job that needs it    |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------- | -------------------- |
+| Dependabot (it opens or updates a pull request)                           | Dependabot secrets only. This is also true for `pull_request_target`. | `update`             |
+| A person or a PAT (for example, the merge that starts the `closed` event) | Actions secrets only                                                  | `labels-after-merge` |
+
+On the GitHub Free plan, only organization **Actions** secrets are limited to public repositories. An organization **Dependabot** secret can also be available to private repositories. So a private repository in a free organization (for example, `x2od/BaseSFDXProject`) must store the Actions secret in the repository itself. Its Dependabot secret can come from the organization or from the repository. A repository secret overrides an organization secret with the same name.
+
+> [!WARNING]
+> If the PAT is only an Actions secret, the `update` job gets an empty `token` and uses the `GITHUB_TOKEN`. The job summary then shows `Token: GITHUB_TOKEN`, and the approval and merge show `github-actions[bot]`.
 
 A fine-grained PAT needs these repository permissions:
 
