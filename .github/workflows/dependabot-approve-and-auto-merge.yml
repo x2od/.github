@@ -1,81 +1,81 @@
-name: Dependabot Pull Request Approve and Merge
-on: pull_request_target
-permissions:
-  pull-requests: write
-  contents: write
-  statuses: read
-  checks: read
-  repository-projects: read
+# Calls the reusable Dependabot workflow in this repository.
+# See .github/workflows/dependabot-reusable.yml for all inputs and token permissions.
+#
+# Rules, for all 3 dependency types (production, development, and indirect):
+#   - Approve and merge minor and patch updates. Major updates need a manual review.
+#   - Approve and merge security updates at all levels, including major. This needs
+#     the token secret with "Dependabot alerts: Read-only".
+#
+# 3 calls run for each PR, 1 for each dependency type. Each PR has exactly 1
+# dependency type, so exactly 1 call approves and merges it. The 3 calls have the
+# same inputs now. They are separate so that each dependency type can get
+# different inputs later.
+
+name: Dependabot
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited, closed]
+
+permissions: {}
+
 jobs:
-  pull-request-title-change:
-    runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' }}
-    steps:
-      # Checkout the source code
-      - name: 'Checkout source code'
-        uses: actions/checkout@v7
+  production:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    uses: ./.github/workflows/dependabot-reusable.yml
+    with:
+      dependency-types: direct:production
+      autoapprove-major: false
+      autoapprove-minor: true
+      autoapprove-patch: true
+      autoapprove-security: true
+      automerge-major: false
+      automerge-minor: true
+      automerge-patch: true
+      automerge-security: true
+    secrets:
+      token: ${{ secrets.DEPENDABOT_TOKEN_X2OD }}
 
-      - name: 'Fetch Dependabot metadata'
-        id: dependabot-fetch
-        uses: dependabot/fetch-metadata@v3
-        with:
-          github-token: '${{ secrets.GITHUB_TOKEN }}'
+  development:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    uses: ./.github/workflows/dependabot-reusable.yml
+    with:
+      dependency-types: direct:development
+      autoapprove-major: false
+      autoapprove-minor: true
+      autoapprove-patch: true
+      autoapprove-security: true
+      automerge-major: false
+      automerge-minor: true
+      automerge-patch: true
+      automerge-security: true
+    secrets:
+      token: ${{ secrets.DEPENDABOT_TOKEN_X2OD }}
 
-      - name: 'Split title and update'
-        id: split-title
-        if: ${{ ! contains(github.event.pull_request.title, '):' ) && contains(github.event.pull_request.title, ':')  && steps.dependabot-fetch.outcome == 'success' }}
-        env:
-          TITLE: ${{ github.event.pull_request.title }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{github.event.pull_request.html_url}}
-        run: |
-          echo $TITLE  
-          title_pt2="${TITLE##*:}"
-          title_pt1="${TITLE%%:*}"
-          gh pr checkout "$PR_URL" # sets the upstream metadata for `gh pr status`
-          packagename="${{ steps.dependabot-fetch.outputs.dependency-names }}"
-          #echo "packagename is $packagename"
-          #echo "$title_pt1"
-          #echo "$title_pt2"
-          parensOpen="("
-          parensClose="):"
-          pr_title=$title_pt1$parensOpen$packagename$parensClose$title_pt2
-          echo "FINAL TITLE: $pr_title"
-          gh pr edit "$PR_URL" --title "$pr_title"
-
-  # Auto merge Dependabot PRs for:
-  # - patch updates on prod dependencies
-  # - minor updates on dev dependencies
-  dependabot-auto-merge:
-    needs: pull-request-title-change
-    # Only run for Dependabot PRs
-    if: ${{ github.actor == 'dependabot[bot]' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Fetch Dependabot metadata'
-        id: dependabot
-        uses: dependabot/fetch-metadata@v3
-        with:
-          github-token: '${{ secrets.GITHUB_TOKEN }}'
-
-      - name: 'Check auto merge conditions'
-        id: auto-merge
-        if: |
-          (
-            steps.dependabot.outputs.update-type == 'version-update:semver-patch' &&
-            contains('direct:production,indirect:production', steps.dependabot.outputs.dependency-type)
-          ) || (
-            contains('version-update:semver-minor,version-update:semver-patch', steps.dependabot.outputs.update-type) &&
-            contains('direct:development,indirect:development', steps.dependabot.outputs.dependency-type)
-          )
-        run: echo "::notice ::auto-merge conditions satisfied"
-
-      - name: 'Approve and merge PR'
-        if: ${{ steps.auto-merge.conclusion == 'success' }}
-        run: |
-          #gh pr edit "$PR_URL" --add-label "auto-merged"  
-          gh pr review --approve "$PR_URL"
-          gh pr merge --auto --squash "$PR_URL"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
+  indirect:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    uses: ./.github/workflows/dependabot-reusable.yml
+    with:
+      dependency-types: indirect
+      autoapprove-major: false
+      autoapprove-minor: true
+      autoapprove-patch: true
+      autoapprove-security: true
+      automerge-major: false
+      automerge-minor: true
+      automerge-patch: true
+      automerge-security: true
+    secrets:
+      token: ${{ secrets.DEPENDABOT_TOKEN_X2OD }}

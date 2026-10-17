@@ -1,5 +1,6 @@
 {
 	"name": "Dependabot Approve and Auto-Merge",
-	"description": "Auto-merge Dependabot PRs",
-	"iconName": "octicon dependabot"
+	"description": "Edit the title, label, approve, and auto-merge Dependabot PRs with the x2od reusable workflow",
+	"iconName": "octicon dependabot",
+	"categories": ["Automation"]
 }

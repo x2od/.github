@@ -1,81 +1,109 @@
-name: Dependabot Pull Request Approve and Merge
-on: pull_request_target
-permissions:
-  pull-requests: write
-  contents: write
-  statuses: read
-  checks: read
-  repository-projects: read
+# Calls the x2od reusable Dependabot workflow. It edits the PR title, adds labels,
+# and approves and merges Dependabot PRs. All inputs and the token permissions are
+# explained at the top of:
+# https://github.com/x2od/.github/blob/main/.github/workflows/dependabot-reusable.yml
+#
+# This starter approves and merges ALL Dependabot PRs: major, minor, patch, and
+# security updates, for all 3 dependency types. The security inputs need the token
+# secret with "Dependabot alerts: Read-only". Without it, they do nothing.
+#
+# It calls the reusable workflow 3 times, 1 time for each dependency type, to show
+# how the calls work together. Each PR has exactly 1 dependency type, so exactly
+# 1 call approves and merges it.
+#
+# All 3 calls edit the title and add the labels ("rename-title" defaults to true).
+# These steps give the same result each time, so the extra runs do no damage, but
+# each call writes its own job summary. To do these steps only 1 time, set
+# "rename-title: false" on all calls but 1.
+#
+# Here, all 3 calls have the same inputs, so 1 call is enough. To give 2 or more
+# dependency types the same outcome, put them in 1 comma-separated list, for example:
+#     dependency-types: direct:production,direct:development,indirect
+# A call without "dependency-types" also handles all 3 types (that is the default).
+# Use separate calls only when the dependency types need different inputs.
+#
+# Before you use this workflow, check these repository settings:
+#   - Settings > General > "Allow auto-merge". If it is off (or not available, for
+#     example in a private repository on a free plan), the workflow waits for the
+#     checks and then merges.
+#   - Settings > Actions > General > "Allow GitHub Actions to create and approve
+#     pull requests" (only if you do not pass the token secret)
+
+name: Dependabot
+
+on:
+  # pull_request_target gives Dependabot PRs a writable GITHUB_TOKEN and Actions
+  # secrets. The reusable workflow never checks out code from the PR.
+  # Keep all 5 types. "closed" adds the labels after the merge.
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited, closed]
+
+permissions: {}
+
 jobs:
-  pull-request-title-change:
-    runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' }}
-    steps:
-      # Checkout the source code
-      - name: 'Checkout source code'
-        uses: actions/checkout@v7
+  production:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    permissions:
+      contents: write # merge the PR
+      pull-requests: write # edit the title, approve, turn on auto-merge
+      issues: write # create labels and add them to the PR
+    uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main
+    with:
+      # All inputs are optional. All booleans default to false, except
+      # rename-title and create-labels (default true).
+      dependency-types: direct:production
+      autoapprove-major: true
+      autoapprove-minor: true
+      autoapprove-patch: true
+      autoapprove-security: true
+      automerge-major: true
+      automerge-minor: true
+      automerge-patch: true
+      automerge-security: true
+      # merge-method: squash
+      # merge-mode: auto # auto (GitHub auto-merge, or wait if it is off), wait, or now
+      # wait-timeout-minutes: 30
+    secrets:
+      # Optional. Without it, the workflow uses the GITHUB_TOKEN. Then the merge does
+      # not start other workflows, and the labels after an auto-merge are not added.
+      token: ${{ secrets.DEPENDABOT_TOKEN_X2OD }}
 
-      - name: 'Fetch Dependabot metadata'
-        id: dependabot-fetch
-        uses: dependabot/fetch-metadata@v3
-        with:
-          github-token: '${{ secrets.GITHUB_TOKEN }}'
+  development:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main
+    with:
+      dependency-types: direct:development
+      autoapprove-major: true
+      autoapprove-minor: true
+      autoapprove-patch: true
+      autoapprove-security: true
+      automerge-major: true
+      automerge-minor: true
+      automerge-patch: true
+      automerge-security: true
+    secrets:
+      token: ${{ secrets.DEPENDABOT_TOKEN_X2OD }}
 
-      - name: 'Split title and update'
-        id: split-title
-        if: ${{ ! contains(github.event.pull_request.title, '):' ) && contains(github.event.pull_request.title, ':')  && steps.dependabot-fetch.outcome == 'success' }}
-        env:
-          TITLE: ${{ github.event.pull_request.title }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{github.event.pull_request.html_url}}
-        run: |
-          echo $TITLE  
-          title_pt2="${TITLE##*:}"
-          title_pt1="${TITLE%%:*}"
-          gh pr checkout "$PR_URL" # sets the upstream metadata for `gh pr status`
-          packagename="${{ steps.dependabot-fetch.outputs.dependency-names }}"
-          #echo "packagename is $packagename"
-          #echo "$title_pt1"
-          #echo "$title_pt2"
-          parensOpen="("
-          parensClose="):"
-          pr_title=$title_pt1$parensOpen$packagename$parensClose$title_pt2
-          echo "FINAL TITLE: $pr_title"
-          gh pr edit "$PR_URL" --title "$pr_title"
-
-  # Auto merge Dependabot PRs for:
-  # - patch updates on prod dependencies
-  # - minor updates on dev dependencies
-  dependabot-auto-merge:
-    needs: pull-request-title-change
-    # Only run for Dependabot PRs
-    if: ${{ github.actor == 'dependabot[bot]' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Fetch Dependabot metadata'
-        id: dependabot
-        uses: dependabot/fetch-metadata@v3
-        with:
-          github-token: '${{ secrets.GITHUB_TOKEN }}'
-
-      - name: 'Check auto merge conditions'
-        id: auto-merge
-        if: |
-          (
-            steps.dependabot.outputs.update-type == 'version-update:semver-patch' &&
-            contains('direct:production,indirect:production', steps.dependabot.outputs.dependency-type)
-          ) || (
-            contains('version-update:semver-minor,version-update:semver-patch', steps.dependabot.outputs.update-type) &&
-            contains('direct:development,indirect:development', steps.dependabot.outputs.dependency-type)
-          )
-        run: echo "::notice ::auto-merge conditions satisfied"
-
-      - name: 'Approve and merge PR'
-        if: ${{ steps.auto-merge.conclusion == 'success' }}
-        run: |
-          #gh pr edit "$PR_URL" --add-label "auto-merged"  
-          gh pr review --approve "$PR_URL"
-          gh pr merge --auto --squash "$PR_URL"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
+  indirect:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main
+    with:
+      dependency-types: indirect
+      autoapprove-major: true
+      autoapprove-minor: true
+      autoapprove-patch: true
+      autoapprove-security: true
+      automerge-major: true
+      automerge-minor: true
+      automerge-patch: true
+      automerge-security: true
+    secrets:
+      token: ${{ secrets.DEPENDABOT_TOKEN_X2OD }}
