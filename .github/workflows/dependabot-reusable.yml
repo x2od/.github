@@ -600,9 +600,34 @@ jobs:
           POLL_SECONDS: "30"
           # If no other checks exist after this time, there is nothing to wait for.
           NO_CHECKS_GRACE_SECONDS: "120"
+          # Wait between retries after a "Base branch was modified" error.
+          MERGE_RETRY_SECONDS: "15"
         run: |
           summary() { printf '%s\n' "$@" >> "$GITHUB_STEP_SUMMARY"; }
           echo "merged-now=false" >> "$GITHUB_OUTPUT"
+
+          # When 2 or more PRs merge at almost the same time, GitHub can refuse the
+          # next merge for a short time with "Base branch was modified". Retry this
+          # error up to 3 times. Other errors fail at once. Retry notes go to stderr,
+          # so they show in the log but not in the captured error text.
+          run_merge() {
+            local attempt err
+            for attempt in 1 2 3 4; do
+              if err=$(gh pr merge "$@" 2>&1); then
+                if ((attempt > 1)); then
+                  summary "- :repeat: The merge worked on attempt $attempt, after \"Base branch was modified\"."
+                fi
+                return 0
+              fi
+              if [[ "$err" == *"Base branch was modified"* ]] && ((attempt < 4)); then
+                echo "::notice title=Merge retry::Base branch was modified. Retry $attempt of 3 in ${MERGE_RETRY_SECONDS}s." >&2
+                sleep "$MERGE_RETRY_SECONDS"
+                continue
+              fi
+              printf '%s' "$err"
+              return 1
+            done
+          }
 
           merge_failed() {
             echo "::error title=Merge failed::${1//$'\n'/ }"
@@ -648,7 +673,7 @@ jobs:
           if [[ "$mode" == "auto" ]]; then
             # --match-head-commit stops the merge if a new commit arrived after this run started.
             # If the PR can merge now, gh merges it immediately and does not turn on auto-merge.
-            if err=$(gh pr merge "$PR_URL" --auto "--$MERGE_METHOD" --match-head-commit "$HEAD_SHA" 2>&1); then
+            if err=$(run_merge "$PR_URL" --auto "--$MERGE_METHOD" --match-head-commit "$HEAD_SHA"); then
               state=$(gh pr view "$PR_URL" --json state --jq .state 2>/dev/null || echo UNKNOWN)
               if [[ "$state" == "MERGED" ]]; then
                 merged_now "Merged the PR (\`$MERGE_METHOD\`). The branch had no checks to wait for."
@@ -727,7 +752,7 @@ jobs:
 
           # ---- Merge at once ----
           if [[ "$mode" == "now" ]]; then
-            if ! err=$(gh pr merge "$PR_URL" "--$MERGE_METHOD" --match-head-commit "$HEAD_SHA" 2>&1); then
+            if ! err=$(run_merge "$PR_URL" "--$MERGE_METHOD" --match-head-commit "$HEAD_SHA"); then
               merge_failed "$err"
             fi
             merged_now "Merged the PR (\`$MERGE_METHOD\`)."
