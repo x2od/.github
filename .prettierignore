@@ -26,3 +26,4 @@ data/
 **/staticresources/**
 !**/staticresources/*.js
 *.txt
+*.py

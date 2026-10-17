@@ -34,6 +34,13 @@ const config = {
 			options: {
 				xmlWhitespaceSensitivity: "ignore"
 			}
+		},
+		// Extensionless "gh" scripts are shell files, so format them as sh.
+		{
+			files: "gh",
+			options: {
+				parser: "sh"
+			}
 		}
 	]
 };

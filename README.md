@@ -188,6 +188,22 @@ jobs:
 
 (Each job also needs the `if`, `permissions`, and `secrets` lines from the first example.)
 
+### Tests
+
+[`tests/dependabot-reusable/run_tests.py`](tests/dependabot-reusable/run_tests.py) tests the step scripts of the reusable workflow. It runs each script with bash, as the GitHub runner does. A fake `gh` command in [`tests/dependabot-reusable/bin/`](tests/dependabot-reusable/bin/gh) answers the API calls. The tests check the exit code, the step outputs, the job summary, and the `gh` calls.
+
+The [`Test Dependabot workflow`](.github/workflows/test-dependabot-reusable.yml) workflow runs actionlint and these tests on each pull request that changes the reusable workflow or the tests.
+
+To run the tests locally, you need bash 4 or later, jq, Python 3, and PyYAML. On macOS, install bash with Homebrew, because `/bin/bash` is version 3.
+
+```bash
+python3 -m pip install PyYAML
+python3 tests/dependabot-reusable/run_tests.py
+actionlint
+```
+
+The script takes the workflow path as an optional argument. The default is `.github/workflows/dependabot-reusable.yml`.
+
 ## Renovate shared configuration
 
 [`renovate.json5`](renovate.json5) holds the shared Renovate rules. A repository uses them with 1 line in its own Renovate file, for example `.github/renovate.json`:
