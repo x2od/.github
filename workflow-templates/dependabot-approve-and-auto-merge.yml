@@ -40,6 +40,8 @@ jobs:
       # automerge-security: true # needs the token secret
       # dependency-types: direct:production,direct:development,indirect
       # merge-method: squash
+      # merge-mode: auto # auto (GitHub auto-merge, or wait if it is off), wait, or now
+      # wait-timeout-minutes: 30
     secrets:
       # Optional. Without it, the workflow uses the GITHUB_TOKEN. Then the merge does
       # not start other workflows, and the labels after an auto-merge are not added.
