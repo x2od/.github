@@ -1,0 +1,699 @@
+# .github/workflows/dependabot-reusable.yml
+#
+# Reusable workflow for Dependabot pull requests. It does these tasks:
+#
+#   1. Rewrites the title scope to the package name (or the group name), to match
+#      the Renovate title style:
+#        build(deps-dev): bump js-yaml from 4.3.0 to 4.3.2
+#        -> build(js-yaml): bump js-yaml from 4.3.0 to 4.3.2
+#      Only a missing scope, "deps", or "deps-dev" is replaced. Other scopes are kept.
+#   2. Adds the "dependabot" label. A label error does not fail the run.
+#   3. Approves and merges the PR. The inputs set this for each update level
+#      (major, minor, patch), for security updates, and for each dependency type.
+#   4. After a successful merge, adds the "dependabot" label and the "auto-merged"
+#      label in 2 separate steps. A label error does not fail the run.
+#
+# Each step writes its result to the job summary ($GITHUB_STEP_SUMMARY).
+#
+# ---------------------------------------------------------------------------------
+# HOW TO CALL THIS WORKFLOW
+# ---------------------------------------------------------------------------------
+#
+# A starter caller is in x2od/.github/workflow-templates/dependabot-approve-and-auto-merge.yml.
+#
+#   name: Dependabot
+#   on:
+#     pull_request_target:
+#       types: [opened, reopened, synchronize, edited, closed]
+#   permissions: {}
+#   jobs:
+#     dependabot:
+#       if: github.event.pull_request.user.login == 'dependabot[bot]'
+#       permissions:
+#         contents: write       # merge the PR
+#         pull-requests: write  # edit the title, approve, turn on auto-merge
+#         issues: write         # create labels and add them to the PR
+#       uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main
+#       with:
+#         autoapprove-patch: true
+#         automerge-patch: true
+#       secrets:
+#         token: ${{ secrets.DEPENDABOT_TOKEN_X2OD }}  # optional
+#
+# Rules for the caller:
+#
+#   - Use the "pull_request_target" event, not "pull_request". On "pull_request",
+#     Dependabot runs get a read-only GITHUB_TOKEN and no Actions secrets.
+#     This workflow never checks out or runs code from the pull request, so
+#     "pull_request_target" is safe here.
+#   - Include all 5 event types above. "closed" is necessary for task 4.
+#   - Give the caller job all 3 permissions above. A called workflow cannot get
+#     more permissions than its caller. If one permission is missing, GitHub
+#     does not start the run.
+#   - Do not use "secrets: inherit". Pass only the "token" secret.
+#
+# Repository settings (Settings > General, and Settings > Actions > General):
+#
+#   - "Allow auto-merge" must be on. Without it, "gh pr merge --auto" fails.
+#   - If you do not pass a token: "Allow GitHub Actions to create and approve pull
+#     requests" must be on. Without it, the GITHUB_TOKEN cannot approve.
+#   - Auto-merge waits for the branch protection rules or rulesets. If the
+#     branch has no required checks, the PR merges immediately.
+#
+# Different rules for each dependency type:
+#
+#   Call this workflow 2 or more times, with 1 job for each call. Give each call its
+#   own "dependency-types" and its own booleans. Set "rename-title: false" on all
+#   calls but 1. The title edit and all label steps then run only 1 time.
+#
+#     jobs:
+#       production:
+#         uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main
+#         with:
+#           dependency-types: direct:production,indirect
+#           autoapprove-patch: true
+#           automerge-patch: true
+#       development:
+#         uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main
+#         with:
+#           dependency-types: direct:development
+#           rename-title: false
+#           autoapprove-minor: true
+#           autoapprove-patch: true
+#           automerge-minor: true
+#           automerge-patch: true
+#
+# ---------------------------------------------------------------------------------
+# THE OPTIONAL "token" SECRET
+# ---------------------------------------------------------------------------------
+#
+# Without a token, the workflow uses the GITHUB_TOKEN. This works, but with 2 limits:
+#
+#   - GitHub does not start new workflow runs for actions done with the GITHUB_TOKEN.
+#     Thus, after auto-merge merges the PR, no "push" workflow (for example, a
+#     release workflow) runs on the base branch. Also, the "closed" event does not
+#     start this workflow, so task 4 cannot run. (Exception: if the PR merges
+#     immediately, task 4 runs in the same job.)
+#   - Security updates cannot be found. The Dependabot alert lookup needs a PAT.
+#
+# A personal access token (PAT) removes both limits. The approval, the merge, and
+# the title edit then show your user name, not "github-actions[bot]".
+#
+# Store the PAT as an Actions secret (not a Dependabot secret) in the organization
+# or in the repository. The x2od organization has DEPENDABOT_TOKEN_X2OD.
+#
+# Fine-grained PAT (recommended). Resource owner: the owner of the calling
+# repositories. Repository access: only the repositories that call this workflow.
+# Repository permissions:
+#
+#   - Contents: Read and write         (merge the PR)
+#   - Pull requests: Read and write    (edit the title, approve, turn on auto-merge)
+#   - Issues: Read and write           (create labels and add them to the PR)
+#   - Metadata: Read-only              (GitHub adds this automatically)
+#   - Dependabot alerts: Read-only     (only for autoapprove-security or automerge-security)
+#   - Workflows: Read and write        (recommended if Dependabot updates GitHub Actions
+#                                       versions; GitHub can refuse to merge changes to
+#                                       .github/workflows without it)
+#
+# Classic PAT: the "repo" scope ("public_repo" is enough for public repositories
+# only), plus the "workflow" scope. The "repo" scope includes Dependabot alerts.
+#
+# A fine-grained PAT has 1 resource owner. For repositories under 2 owners (for
+# example, x2od and dschach), make 1 PAT for each owner.
+#
+# The token user must not be the PR author. Dependabot is the author, so this is
+# not a problem.
+
+name: Dependabot pull request (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      autoapprove-major:
+        description: Approve major updates.
+        type: boolean
+        required: false
+        default: false
+      autoapprove-minor:
+        description: Approve minor updates.
+        type: boolean
+        required: false
+        default: false
+      autoapprove-patch:
+        description: Approve patch updates.
+        type: boolean
+        required: false
+        default: false
+      automerge-major:
+        description: Turn on auto-merge for major updates.
+        type: boolean
+        required: false
+        default: false
+      automerge-minor:
+        description: Turn on auto-merge for minor updates.
+        type: boolean
+        required: false
+        default: false
+      automerge-patch:
+        description: Turn on auto-merge for patch updates.
+        type: boolean
+        required: false
+        default: false
+      autoapprove-security:
+        description: >-
+          Approve updates that fix a Dependabot security alert, at all update levels.
+          Needs the "token" secret with "Dependabot alerts: Read-only".
+        type: boolean
+        required: false
+        default: false
+      automerge-security:
+        description: >-
+          Turn on auto-merge for updates that fix a Dependabot security alert, at all
+          update levels. Needs the "token" secret with "Dependabot alerts: Read-only".
+        type: boolean
+        required: false
+        default: false
+      dependency-types:
+        description: >-
+          Comma-separated dependency types that this call can approve and merge.
+          Valid values: direct:production, direct:development, indirect.
+        type: string
+        required: false
+        default: direct:production,direct:development,indirect
+      rename-title:
+        description: >-
+          Edit the title and add the labels. When you call this workflow more than
+          1 time, set this to false on all calls but 1.
+        type: boolean
+        required: false
+        default: true
+      create-labels:
+        description: Create the "dependabot" and "auto-merged" labels if they do not exist.
+        type: boolean
+        required: false
+        default: true
+      merge-method:
+        description: "The merge method: squash, merge, or rebase."
+        type: string
+        required: false
+        default: squash
+      token-user:
+        description: >-
+          The login of the "token" user. Leave empty to find it automatically. The
+          workflow uses it to find its own approvals and its own merges.
+        type: string
+        required: false
+        default: ""
+    secrets:
+      token:
+        description: >-
+          Optional PAT. If empty, the workflow uses the GITHUB_TOKEN. See the comments
+          at the top of this file for the necessary permissions.
+        required: false
+
+permissions: {}
+
+env:
+  # Shared script for the label steps. Each label step sets LABEL, LABEL_COLOR, and
+  # LABEL_DESCRIPTION, then runs: bash -c "$ADD_LABEL_SCRIPT"
+  # The script never fails the step. It writes all errors to the job summary.
+  ADD_LABEL_SCRIPT: |
+    summary() { printf '%s\n' "$@" >> "$GITHUB_STEP_SUMMARY"; }
+    if [[ "$CREATE_LABELS" == "true" ]] && ! gh api "repos/$GH_REPO/labels/$LABEL" --silent 2>/dev/null; then
+      if err=$(gh api "repos/$GH_REPO/labels" -f name="$LABEL" -f color="$LABEL_COLOR" -f description="$LABEL_DESCRIPTION" --silent 2>&1); then
+        summary "- :new: Created the \`$LABEL\` label in this repository."
+      else
+        summary "- :warning: Could not create the \`$LABEL\` label: \`${err//$'\n'/ }\`"
+      fi
+    fi
+    if err=$(gh api "repos/$GH_REPO/issues/$PR_NUMBER/labels" -f "labels[]=$LABEL" --silent 2>&1); then
+      summary "- :label: Added the \`$LABEL\` label."
+    else
+      echo "::warning title=Label not added::Could not add the '$LABEL' label: ${err//$'\n'/ }"
+      summary "- :warning: Could not add the \`$LABEL\` label. The run continues without it." \
+        "  - Error: \`${err//$'\n'/ }\`" \
+        "  - Fix: create the label in the repository (Issues > Labels), or set \`create-labels: true\` and give the caller job \`issues: write\`."
+    fi
+    exit 0
+
+jobs:
+  update:
+    name: Title, label, approve, and merge
+    # The PR author and the actor must both be Dependabot. Thus, the workflow does not
+    # approve a commit that a person pushed to a Dependabot branch. It also skips the
+    # "edited" run that a PAT title edit starts.
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      github.event.action != 'closed' &&
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    concurrency:
+      # 1 run at a time for each PR and each call. Calls with different
+      # dependency-types do not block each other.
+      group: dependabot-${{ github.repository }}-${{ github.event.pull_request.number }}-${{ inputs.dependency-types }}
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ secrets.token || github.token }}
+      GH_REPO: ${{ github.repository }}
+      HAS_TOKEN: ${{ secrets.token != '' }}
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      EVENT_ACTION: ${{ github.event.action }}
+      CREATE_LABELS: ${{ inputs.create-labels }}
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v3
+        with:
+          github-token: ${{ secrets.token || github.token }}
+
+      - name: Look up the Dependabot security alert
+        id: alert
+        # The alert lookup needs a PAT. If it fails, the PR is not a security update.
+        if: ${{ env.HAS_TOKEN == 'true' && (inputs.autoapprove-security || inputs.automerge-security) }}
+        continue-on-error: true
+        uses: dependabot/fetch-metadata@v3
+        with:
+          github-token: ${{ secrets.token }}
+          alert-lookup: true
+
+      - name: Find the token user
+        id: token-user
+        env:
+          TOKEN_USER_INPUT: ${{ inputs.token-user }}
+        run: |
+          if [[ -n "$TOKEN_USER_INPUT" ]]; then
+            user="$TOKEN_USER_INPUT"
+          elif [[ "$HAS_TOKEN" == "true" ]]; then
+            if ! user=$(gh api user --jq .login 2>/dev/null); then
+              user=""
+              echo "::warning title=Token user unknown::Could not find the user of the token secret. Set the token-user input."
+            fi
+          else
+            user="github-actions[bot]"
+          fi
+          echo "Token user: ${user:-(unknown)}"
+          echo "login=$user" >> "$GITHUB_OUTPUT"
+
+      - name: Write the summary header
+        env:
+          DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
+          DEPENDENCY_GROUP: ${{ steps.metadata.outputs.dependency-group }}
+          DEPENDENCY_TYPE: ${{ steps.metadata.outputs.dependency-type }}
+          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+          PREVIOUS_VERSION: ${{ steps.metadata.outputs.previous-version }}
+          NEW_VERSION: ${{ steps.metadata.outputs.new-version }}
+          ECOSYSTEM: ${{ steps.metadata.outputs.package-ecosystem }}
+          TOKEN_USER: ${{ steps.token-user.outputs.login }}
+        run: |
+          {
+            echo "## Dependabot: [PR #$PR_NUMBER]($PR_URL)"
+            echo
+            echo "| Item | Value |"
+            echo "| --- | --- |"
+            echo "| Event | \`$EVENT_ACTION\` |"
+            echo "| Dependencies | \`${DEPENDENCY_NAMES:-unknown}\` |"
+            if [[ -n "$DEPENDENCY_GROUP" ]]; then echo "| Group | \`$DEPENDENCY_GROUP\` |"; fi
+            if [[ -n "$PREVIOUS_VERSION$NEW_VERSION" ]]; then echo "| Versions | \`${PREVIOUS_VERSION:-?}\` → \`${NEW_VERSION:-?}\` |"; fi
+            echo "| Ecosystem | \`${ECOSYSTEM:-unknown}\` |"
+            echo "| Update type | \`${UPDATE_TYPE:-not semver}\` |"
+            echo "| Dependency type | \`${DEPENDENCY_TYPE:-unknown}\` |"
+            echo "| Token | $([[ "$HAS_TOKEN" == "true" ]] && echo "\`token\` secret (\`${TOKEN_USER:-unknown user}\`)" || echo "GITHUB_TOKEN") |"
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Replace the title scope with the package name
+        if: ${{ inputs.rename-title }}
+        env:
+          PACKAGE_NAMES: ${{ steps.metadata.outputs.dependency-names }}
+          DEPENDENCY_GROUP: ${{ steps.metadata.outputs.dependency-group }}
+        run: |
+          summary() { printf '%s\n' "$@" >> "$GITHUB_STEP_SUMMARY"; }
+          summary "### Title"
+
+          # Read the current title. The event payload can be old if an earlier run changed it.
+          if ! title=$(gh pr view "$PR_URL" --json title --jq .title 2>&1); then
+            echo "::warning title=Title not read::$title"
+            summary "- :warning: Could not read the title: \`$title\`. The title is unchanged."
+            exit 0
+          fi
+          echo "Current title: $title"
+
+          # A group update uses the group name. Other updates use the package names.
+          new_scope="${DEPENDENCY_GROUP:-$PACKAGE_NAMES}"
+          if [[ -z "$new_scope" ]]; then
+            summary "- The Dependabot metadata has no package names. The title is unchanged."
+            exit 0
+          fi
+
+          # type, optional (scope), optional breaking-change "!", then ": description"
+          pattern='^([a-z]+)(\(([^)]*)\))?(!)?: (.*)$'
+          if [[ ! "$title" =~ $pattern ]]; then
+            summary "- The title is not in Conventional Commits form. The title is unchanged: \`$title\`"
+            exit 0
+          fi
+          type="${BASH_REMATCH[1]}"
+          scope="${BASH_REMATCH[3]}"
+          breaking="${BASH_REMATCH[4]}"
+          description="${BASH_REMATCH[5]}"
+
+          if [[ "$scope" == "$new_scope" ]]; then
+            summary "- The title is already correct: \`$title\`"
+            exit 0
+          fi
+
+          case "$scope" in
+            "" | deps | deps-dev) ;;
+            *)
+              summary "- The scope \`$scope\` is not a Dependabot default. The title is unchanged: \`$title\`"
+              exit 0
+              ;;
+          esac
+
+          new_title="${type}(${new_scope})${breaking}: ${description}"
+          echo "New title: $new_title"
+          if err=$(gh api -X PATCH "repos/$GH_REPO/pulls/$PR_NUMBER" -f title="$new_title" --silent 2>&1); then
+            summary "- Old: \`$title\`" "- New: \`$new_title\`"
+          else
+            echo "::warning title=Title not changed::${err//$'\n'/ }"
+            summary "- :warning: Could not change the title: \`${err//$'\n'/ }\`" "- The title is unchanged: \`$title\`"
+          fi
+
+      - name: Write the labels header
+        if: ${{ inputs.rename-title }}
+        run: printf '%s\n' "### Labels" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Add the dependabot label
+        if: ${{ inputs.rename-title }}
+        env:
+          LABEL: dependabot
+          LABEL_COLOR: "0366d6"
+          LABEL_DESCRIPTION: Pull request from Dependabot
+        run: bash -c "$ADD_LABEL_SCRIPT"
+
+      - name: Decide to approve and merge
+        id: decide
+        env:
+          DEPENDENCY_TYPE: ${{ steps.metadata.outputs.dependency-type }}
+          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+          GHSA_ID: ${{ steps.alert.outputs.ghsa-id }}
+          ALERT_OUTCOME: ${{ steps.alert.outcome }}
+          DEPENDENCY_TYPES: ${{ inputs.dependency-types }}
+          MERGE_METHOD: ${{ inputs.merge-method }}
+          APPROVE_MAJOR: ${{ inputs.autoapprove-major }}
+          APPROVE_MINOR: ${{ inputs.autoapprove-minor }}
+          APPROVE_PATCH: ${{ inputs.autoapprove-patch }}
+          APPROVE_SECURITY: ${{ inputs.autoapprove-security }}
+          MERGE_MAJOR: ${{ inputs.automerge-major }}
+          MERGE_MINOR: ${{ inputs.automerge-minor }}
+          MERGE_PATCH: ${{ inputs.automerge-patch }}
+          MERGE_SECURITY: ${{ inputs.automerge-security }}
+        run: |
+          summary() { printf '%s\n' "$@" >> "$GITHUB_STEP_SUMMARY"; }
+          summary "### Approve and merge"
+
+          case "$MERGE_METHOD" in
+            squash | merge | rebase) ;;
+            *)
+              echo "::error title=Bad input::merge-method must be squash, merge, or rebase. The value is '$MERGE_METHOD'."
+              summary "- :x: The \`merge-method\` input must be \`squash\`, \`merge\`, or \`rebase\`. The value is \`$MERGE_METHOD\`."
+              exit 1
+              ;;
+          esac
+
+          case "$UPDATE_TYPE" in
+            version-update:semver-major) level=major approve_level="$APPROVE_MAJOR" merge_level="$MERGE_MAJOR" ;;
+            version-update:semver-minor) level=minor approve_level="$APPROVE_MINOR" merge_level="$MERGE_MINOR" ;;
+            version-update:semver-patch) level=patch approve_level="$APPROVE_PATCH" merge_level="$MERGE_PATCH" ;;
+            *) level="" approve_level=false merge_level=false ;;
+          esac
+
+          type_allowed=false
+          IFS=',' read -ra allowed_types <<< "$DEPENDENCY_TYPES"
+          for allowed in "${allowed_types[@]}"; do
+            allowed="${allowed//[[:space:]]/}"
+            if [[ -n "$allowed" && "$allowed" == "$DEPENDENCY_TYPE" ]]; then
+              type_allowed=true
+            fi
+          done
+
+          security=false
+          if [[ -n "$GHSA_ID" ]]; then
+            security=true
+          fi
+
+          # Security alert row
+          if [[ "$APPROVE_SECURITY" == "true" || "$MERGE_SECURITY" == "true" ]]; then
+            if [[ "$HAS_TOKEN" != "true" ]]; then
+              summary "- :information_source: Security alert: not checked. The alert lookup needs the \`token\` secret."
+            elif [[ "$ALERT_OUTCOME" == "failure" ]]; then
+              summary "- :warning: Security alert: the lookup failed. Give the token \`Dependabot alerts: Read-only\`."
+            elif [[ "$security" == "true" ]]; then
+              summary "- :shield: Security alert: \`$GHSA_ID\`."
+            else
+              summary "- Security alert: none."
+            fi
+          fi
+
+          approve=false
+          merge=false
+          if [[ "$EVENT_ACTION" != "opened" && "$EVENT_ACTION" != "reopened" && "$EVENT_ACTION" != "synchronize" ]]; then
+            summary "- :next_track_button: No approval and no merge on the \`$EVENT_ACTION\` event. Only \`opened\`, \`reopened\`, and \`synchronize\` approve and merge."
+          elif [[ "$type_allowed" != "true" ]]; then
+            summary "- :next_track_button: No approval and no merge. The dependency type \`${DEPENDENCY_TYPE:-unknown}\` is not in \`dependency-types\` (\`$DEPENDENCY_TYPES\`) for this call."
+          elif [[ -z "$level" && "$security" != "true" ]]; then
+            summary "- :next_track_button: No approval and no merge. The update type \`${UPDATE_TYPE:-empty}\` is not a semver major, minor, or patch update. Review this PR manually."
+          else
+            # Approve
+            if [[ "$approve_level" == "true" ]]; then
+              approve=true
+              summary "- :white_check_mark: Approve: yes. \`autoapprove-$level\` is \`true\`."
+            elif [[ "$security" == "true" && "$APPROVE_SECURITY" == "true" ]]; then
+              approve=true
+              summary "- :white_check_mark: Approve: yes. This is a security update and \`autoapprove-security\` is \`true\`."
+            else
+              summary "- :no_entry_sign: Approve: no. \`autoapprove-${level:-security}\` is \`false\`."
+            fi
+            # Merge
+            if [[ "$merge_level" == "true" ]]; then
+              merge=true
+              summary "- :white_check_mark: Merge: yes. \`automerge-$level\` is \`true\`."
+            elif [[ "$security" == "true" && "$MERGE_SECURITY" == "true" ]]; then
+              merge=true
+              summary "- :white_check_mark: Merge: yes. This is a security update and \`automerge-security\` is \`true\`."
+            else
+              summary "- :no_entry_sign: Merge: no. \`automerge-${level:-security}\` is \`false\`."
+            fi
+            if [[ "$merge" == "true" && "$approve" != "true" ]]; then
+              summary "- :information_source: Merge without approval works only if the repository does not require a review."
+            fi
+          fi
+
+          {
+            echo "approve=$approve"
+            echo "merge=$merge"
+            echo "level=$level"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Approve the PR
+        if: ${{ steps.decide.outputs.approve == 'true' }}
+        env:
+          TOKEN_USER: ${{ steps.token-user.outputs.login }}
+          LEVEL: ${{ steps.decide.outputs.level }}
+        run: |
+          summary() { printf '%s\n' "$@" >> "$GITHUB_STEP_SUMMARY"; }
+
+          # Do not approve 2 times. If GitHub dismissed the old approval after a
+          # rebase, the latest review state is DISMISSED, so the workflow approves again.
+          if [[ -n "$TOKEN_USER" ]]; then
+            latest=$(gh api --paginate "repos/$GH_REPO/pulls/$PR_NUMBER/reviews" \
+              --jq '.[] | select(.user.login == env.TOKEN_USER) | .state' 2>/dev/null | tail -n 1 || true)
+            if [[ "$latest" == "APPROVED" ]]; then
+              summary "- :next_track_button: \`$TOKEN_USER\` already approved this PR. No new approval."
+              exit 0
+            fi
+          fi
+
+          body="Approved automatically by the x2od Dependabot workflow (update level: ${LEVEL:-security})."
+          if err=$(gh api -X POST "repos/$GH_REPO/pulls/$PR_NUMBER/reviews" \
+            -f event=APPROVE -f commit_id="$HEAD_SHA" -f body="$body" --silent 2>&1); then
+            summary "- :white_check_mark: Approved the PR at commit \`${HEAD_SHA:0:7}\`."
+          else
+            echo "::error title=Approval failed::${err//$'\n'/ }"
+            summary "- :x: The approval failed: \`${err//$'\n'/ }\`" \
+              "  - With the GITHUB_TOKEN: turn on \"Allow GitHub Actions to create and approve pull requests\" (Settings > Actions > General)." \
+              "  - With a PAT: give it \`Pull requests: Read and write\`."
+            exit 1
+          fi
+
+      - name: Turn on auto-merge
+        id: merge
+        if: ${{ steps.decide.outputs.merge == 'true' }}
+        env:
+          MERGE_METHOD: ${{ inputs.merge-method }}
+        run: |
+          summary() { printf '%s\n' "$@" >> "$GITHUB_STEP_SUMMARY"; }
+          echo "merged-now=false" >> "$GITHUB_OUTPUT"
+
+          if ! status=$(gh pr view "$PR_URL" --json state,autoMergeRequest \
+            --jq '"\(.state) \(.autoMergeRequest != null)"' 2>&1); then
+            echo "::error title=PR not read::$status"
+            summary "- :x: Could not read the PR state: \`$status\`"
+            exit 1
+          fi
+          read -r state auto_on <<< "$status"
+          if [[ "$state" != "OPEN" ]]; then
+            summary "- :next_track_button: The PR is \`$state\`. No merge."
+            exit 0
+          fi
+          if [[ "$auto_on" == "true" ]]; then
+            summary "- :next_track_button: Auto-merge is already on. No change."
+            exit 0
+          fi
+
+          # --match-head-commit stops the merge if a new commit arrived after this run started.
+          # If the PR can merge now, gh merges it immediately and does not turn on auto-merge.
+          if ! err=$(gh pr merge "$PR_URL" --auto "--$MERGE_METHOD" --match-head-commit "$HEAD_SHA" 2>&1); then
+            echo "::error title=Merge failed::${err//$'\n'/ }"
+            summary "- :x: The merge failed: \`${err//$'\n'/ }\`" \
+              "  - Turn on \"Allow auto-merge\" (Settings > General)." \
+              "  - If the repository requires a review, set the \`autoapprove-*\` input for this update level." \
+              "  - Make sure that \`$MERGE_METHOD\` merges are allowed in this repository."
+            exit 1
+          fi
+
+          state=$(gh pr view "$PR_URL" --json state --jq .state 2>/dev/null || echo UNKNOWN)
+          if [[ "$state" == "MERGED" ]]; then
+            echo "merged-now=true" >> "$GITHUB_OUTPUT"
+            summary "- :rocket: Merged the PR (\`$MERGE_METHOD\`). The branch had no checks to wait for."
+          else
+            summary "- :hourglass: Turned on auto-merge (\`$MERGE_METHOD\`). GitHub merges the PR after the required checks and reviews pass."
+            if [[ "$HAS_TOKEN" != "true" ]]; then
+              summary "- :information_source: This run uses the GITHUB_TOKEN. GitHub does not start a workflow run for that merge." \
+                "  The \`dependabot\` and \`auto-merged\` labels will not be added after the merge. Pass the \`token\` secret to get them."
+            fi
+          fi
+
+      # Task 4 for a PR that merged immediately. The "closed" run does not start for a
+      # GITHUB_TOKEN merge, so these steps add the labels here.
+      - name: Add the dependabot label after the merge
+        if: ${{ steps.merge.outputs.merged-now == 'true' && inputs.rename-title }}
+        env:
+          LABEL: dependabot
+          LABEL_COLOR: "0366d6"
+          LABEL_DESCRIPTION: Pull request from Dependabot
+        run: |
+          printf '%s\n' "### Labels after the merge" >> "$GITHUB_STEP_SUMMARY"
+          bash -c "$ADD_LABEL_SCRIPT"
+
+      - name: Add the auto-merged label after the merge
+        if: ${{ steps.merge.outputs.merged-now == 'true' && inputs.rename-title }}
+        env:
+          LABEL: auto-merged
+          LABEL_COLOR: "0e8a16"
+          LABEL_DESCRIPTION: Merged automatically by a workflow
+        run: bash -c "$ADD_LABEL_SCRIPT"
+
+  labels-after-merge:
+    name: Labels after the merge
+    # Runs on the "closed" event, only for a merged Dependabot PR. With the GITHUB_TOKEN,
+    # GitHub does not start this run for an auto-merge, so this job needs the token secret.
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      inputs.rename-title
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+      issues: write
+    env:
+      GH_TOKEN: ${{ secrets.token || github.token }}
+      GH_REPO: ${{ github.repository }}
+      HAS_TOKEN: ${{ secrets.token != '' }}
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      MERGED_BY: ${{ github.event.pull_request.merged_by.login }}
+      CREATE_LABELS: ${{ inputs.create-labels }}
+    steps:
+      - name: Find the token user
+        id: token-user
+        env:
+          TOKEN_USER_INPUT: ${{ inputs.token-user }}
+        run: |
+          if [[ -n "$TOKEN_USER_INPUT" ]]; then
+            user="$TOKEN_USER_INPUT"
+          elif [[ "$HAS_TOKEN" == "true" ]]; then
+            user=$(gh api user --jq .login 2>/dev/null) || user=""
+          else
+            user="github-actions[bot]"
+          fi
+          echo "Token user: ${user:-(unknown)}"
+          echo "login=$user" >> "$GITHUB_OUTPUT"
+
+      - name: Check that this workflow merged the PR
+        id: check
+        env:
+          TOKEN_USER: ${{ steps.token-user.outputs.login }}
+        run: |
+          summary() { printf '%s\n' "$@" >> "$GITHUB_STEP_SUMMARY"; }
+          summary "## Dependabot: [PR #$PR_NUMBER]($PR_URL) merged" ""
+          echo "auto=false" >> "$GITHUB_OUTPUT"
+
+          if [[ -z "$TOKEN_USER" ]]; then
+            summary "- :warning: The token user is unknown, so the workflow cannot check who merged the PR. No labels added." \
+              "  - Fix: set the \`token-user\` input."
+            exit 0
+          fi
+          if [[ "$MERGED_BY" != "$TOKEN_USER" ]]; then
+            summary "- :next_track_button: \`$MERGED_BY\` merged the PR, not the workflow (\`$TOKEN_USER\`). No labels added."
+            exit 0
+          fi
+
+          # The token user can also be a person (the PAT owner), who can merge by hand.
+          # So also look for an auto-merge event from the token user, or the label from
+          # an immediate merge.
+          if labels=$(gh api "repos/$GH_REPO/issues/$PR_NUMBER/labels" --jq '.[].name' 2>/dev/null) \
+            && grep -qx "auto-merged" <<< "$labels"; then
+            summary "- :next_track_button: The PR already has the \`auto-merged\` label. Nothing to do."
+            exit 0
+          fi
+          last_auto=$(gh api --paginate "repos/$GH_REPO/issues/$PR_NUMBER/events" \
+            --jq '.[] | select(.event | test("^auto_(merge|squash|rebase)_(enabled|disabled)$")) | "\(.event) \(.actor.login)"' \
+            2>/dev/null | tail -n 1 || true)
+          read -r last_event last_actor <<< "$last_auto"
+          if [[ "$last_event" == *_enabled && "$last_actor" == "$TOKEN_USER" ]]; then
+            echo "auto=true" >> "$GITHUB_OUTPUT"
+            summary "- :white_check_mark: \`$TOKEN_USER\` turned on auto-merge, and GitHub merged the PR."
+          else
+            summary "- :next_track_button: \`$TOKEN_USER\` merged the PR, but not with auto-merge. No labels added."
+          fi
+
+      - name: Write the labels header
+        if: ${{ steps.check.outputs.auto == 'true' }}
+        run: printf '%s\n' "### Labels" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Add the dependabot label
+        if: ${{ steps.check.outputs.auto == 'true' }}
+        env:
+          LABEL: dependabot
+          LABEL_COLOR: "0366d6"
+          LABEL_DESCRIPTION: Pull request from Dependabot
+        run: bash -c "$ADD_LABEL_SCRIPT"
+
+      - name: Add the auto-merged label
+        if: ${{ steps.check.outputs.auto == 'true' }}
+        env:
+          LABEL: auto-merged
+          LABEL_COLOR: "0e8a16"
+          LABEL_DESCRIPTION: Merged automatically by a workflow
+        run: bash -c "$ADD_LABEL_SCRIPT"
