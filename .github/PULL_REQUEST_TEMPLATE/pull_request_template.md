@@ -42,11 +42,7 @@
 
 ## Functionality Before
 
-insert_gif_or_summary
-
 ## Functionality After
-
-insert_gif_or_summary
 
 # Issue ticket number and link (if applicable)
 
@@ -68,6 +64,7 @@ automatically close the issue.
 - [ ] 📗 The code has been linted and formatted using the repo Prettier configuration
 - [ ] ✅ If it includes Apex, Aura, LWC, or Flows, I have added thorough tests
 - [ ] 📝 I have used descriptive commit messages
+
 <!-- - [ ] Will this be part of a product update? If yes, please write one phrase about this update. -->
 
 # Added to documentation?

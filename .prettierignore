@@ -27,3 +27,4 @@ data/
 !**/staticresources/*.js
 *.txt
 *.py
+.claude

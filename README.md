@@ -210,8 +210,8 @@ The script takes the workflow path as an optional argument. The default is `.git
 
 ```json
 {
-	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
-	"extends": ["github>x2od/.github:renovate.json5"]
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>x2od/.github:renovate.json5"]
 }
 ```
 

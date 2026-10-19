@@ -5,28 +5,28 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: 'npm' # See documentation for possible values
+    directory: '/' # Location of package manifests
     commit-message:
-      prefix: "deps" # packaged dependencies
-      prefix-development: "build" # dev-dependencies
+      prefix: 'deps' # packaged dependencies
+      prefix-development: 'build' # dev-dependencies
       #include: 'scope'
-    rebase-strategy: "auto"
+    rebase-strategy: 'auto'
     schedule:
-      interval: "daily"
+      interval: 'daily'
     open-pull-requests-limit: 0
 
     ignore:
-      - dependency-name: "renovate"
+      - dependency-name: 'renovate'
         update-types:
-          - "version-update:semver-patch"
-  - package-ecosystem: "github-actions" # See documentation for possible values
-    directory: "/" # Location of package manifests
+          - 'version-update:semver-patch'
+  - package-ecosystem: 'github-actions' # See documentation for possible values
+    directory: '/' # Location of package manifests
     commit-message:
-      prefix: "ci"
+      prefix: 'ci'
       #include: 'scope'
       # Scope will be handled by the auto-merge action
     open-pull-requests-limit: 0
-    rebase-strategy: "auto"
+    rebase-strategy: 'auto'
     schedule:
-      interval: "daily"
+      interval: 'daily'

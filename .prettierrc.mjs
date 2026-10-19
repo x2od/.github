@@ -14,17 +14,11 @@ const config = {
 				printWidth: 100
 			}
 		},
-		// Code blocks embedded in Markdown are formatted with the Markdown
-		// file's options, not their own language's overrides, so Markdown
-		// must use tabs for the Apex examples on the site to keep them (the
-		// shared config formats Apex files with tabs but sets Markdown to
-		// spaces). The Markdown text itself formats identically either way,
-		// and embedded YAML stays space-indented because the YAML spec
-		// forbids tabs.
 		{
-			files: "*.md",
+			files: "*.json5",
 			options: {
-				useTabs: true
+				quoteProps: "preserve",
+				singleQuote: false
 			}
 		},
 		// Extensionless "gh" scripts are shell files, so format them as sh.
