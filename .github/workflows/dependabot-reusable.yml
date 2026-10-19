@@ -215,7 +215,7 @@ on:
         required: false
         default: true
       merge-method:
-        description: "The merge method: squash, merge, or rebase."
+        description: 'The merge method: squash, merge, or rebase.'
         type: string
         required: false
         default: squash
@@ -240,7 +240,7 @@ on:
           workflow uses it to find its own approvals and its own merges.
         type: string
         required: false
-        default: ""
+        default: ''
     secrets:
       token:
         description: >-
@@ -433,7 +433,7 @@ jobs:
         if: ${{ inputs.rename-title }}
         env:
           LABEL: dependabot
-          LABEL_COLOR: "0366d6"
+          LABEL_COLOR: '0366d6'
           LABEL_DESCRIPTION: Pull request from Dependabot
         run: bash -c "$ADD_LABEL_SCRIPT"
 
@@ -597,11 +597,11 @@ jobs:
           # The wait skips the checks of this workflow. One of them is this job, which
           # stays "in progress" until the wait ends.
           CALLER_WORKFLOW: ${{ github.workflow }}
-          POLL_SECONDS: "30"
+          POLL_SECONDS: '30'
           # If no other checks exist after this time, there is nothing to wait for.
-          NO_CHECKS_GRACE_SECONDS: "120"
+          NO_CHECKS_GRACE_SECONDS: '120'
           # Wait between retries after a "Base branch was modified" error.
-          MERGE_RETRY_SECONDS: "15"
+          MERGE_RETRY_SECONDS: '15'
         run: |
           summary() { printf '%s\n' "$@" >> "$GITHUB_STEP_SUMMARY"; }
           echo "merged-now=false" >> "$GITHUB_OUTPUT"
@@ -764,7 +764,7 @@ jobs:
         if: ${{ steps.merge.outputs.merged-now == 'true' && inputs.rename-title }}
         env:
           LABEL: dependabot
-          LABEL_COLOR: "0366d6"
+          LABEL_COLOR: '0366d6'
           LABEL_DESCRIPTION: Pull request from Dependabot
         run: |
           printf '%s\n' "### Labels after the merge" >> "$GITHUB_STEP_SUMMARY"
@@ -774,7 +774,7 @@ jobs:
         if: ${{ steps.merge.outputs.merged-now == 'true' && inputs.rename-title }}
         env:
           LABEL: auto-merged
-          LABEL_COLOR: "0e8a16"
+          LABEL_COLOR: '0e8a16'
           LABEL_DESCRIPTION: Merged automatically by a workflow
         run: bash -c "$ADD_LABEL_SCRIPT"
 
@@ -863,7 +863,7 @@ jobs:
         if: ${{ steps.check.outputs.auto == 'true' }}
         env:
           LABEL: dependabot
-          LABEL_COLOR: "0366d6"
+          LABEL_COLOR: '0366d6'
           LABEL_DESCRIPTION: Pull request from Dependabot
         run: bash -c "$ADD_LABEL_SCRIPT"
 
@@ -871,6 +871,6 @@ jobs:
         if: ${{ steps.check.outputs.auto == 'true' }}
         env:
           LABEL: auto-merged
-          LABEL_COLOR: "0e8a16"
+          LABEL_COLOR: '0e8a16'
           LABEL_DESCRIPTION: Merged automatically by a workflow
         run: bash -c "$ADD_LABEL_SCRIPT"

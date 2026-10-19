@@ -3,8 +3,7 @@
 	name="Custom Rules"
 	xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd"
->
+	xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
 	<description>Configuration of PMD for Salesforce Apex. ALL applicable rules.</description>
 
 	<!-- APEX SECURITY -->
@@ -38,42 +37,42 @@
 
 	<!-- APEX DESIGN-->
 
-	<rule ref="category/apex/design.xml/ExcessiveParameterList" message="Avoid long parameter lists (you have more than 10)">
+	<rule ref="category/apex/design.xml/ExcessiveParameterList">
 		<priority>3</priority>
 		<properties>
 			<property name="minimum" value="6" />
 		</properties>
 	</rule>
 
-	<rule ref="category/apex/design.xml/ExcessivePublicCount" message="This class has too many public methods and attributes">
+	<rule ref="category/apex/design.xml/ExcessivePublicCount">
 		<priority>4</priority>
 		<properties>
 			<property name="minimum" value="40" />
 		</properties>
 	</rule>
 
-	<rule ref="category/apex/design.xml/NcssConstructorCount" message="The constructor has an NCSS line count of {0}">
+	<rule ref="category/apex/design.xml/NcssConstructorCount">
 		<priority>3</priority>
 		<properties>
 			<property name="minimum" value="50" />
 		</properties>
 	</rule>
 
-	<rule ref="category/apex/design.xml/NcssMethodCount" message="The method {0}() has an NCSS line count of {1}">
+	<rule ref="category/apex/design.xml/NcssMethodCount">
 		<priority>3</priority>
 		<properties>
 			<property name="minimum" value="500" />
 		</properties>
 	</rule>
 
-	<rule ref="category/apex/design.xml/NcssTypeCount" message="The type has an NCSS line count of {0}">
+	<rule ref="category/apex/design.xml/NcssTypeCount">
 		<priority>3</priority>
 		<properties>
 			<property name="minimum" value="1500" />
 		</properties>
 	</rule>
 
-	<rule ref="category/apex/design.xml/StdCyclomaticComplexity" message="The {0} ''{1}'' has a Standard Cyclomatic Complexity of {2}.">
+	<rule ref="category/apex/design.xml/StdCyclomaticComplexity">
 		<priority>3</priority>
 		<properties>
 			<property name="reportLevel" value="30" />
@@ -86,14 +85,14 @@
 
 	<rule ref="category/apex/design.xml/CognitiveComplexity" />
 
-	<rule ref="category/apex/design.xml/TooManyFields" message="Too many fields">
+	<rule ref="category/apex/design.xml/TooManyFields">
 		<priority>3</priority>
 		<properties>
 			<property name="maxfields" value="50" />
 		</properties>
 	</rule>
 
-	<rule ref="category/apex/design.xml/AvoidDeeplyNestedIfStmts" message="Deeply nested if..else statements are hard to read">
+	<rule ref="category/apex/design.xml/AvoidDeeplyNestedIfStmts">
 		<priority>3</priority>
 		<properties>
 			<property name="problemDepth" value="6" />
@@ -105,11 +104,13 @@
 		<priority>2</priority>
 		<properties>
 			<property name="violationSuppressXPath">
-				<value><![CDATA[
+				<value>
+					<![CDATA[
 			//Method[
 					descendant::ModifierNode/Annotation[@Image="IsTest"]
 			]
-	]]></value>
+	]]>
+				</value>
 			</property>
 		</properties>
 	</rule>
@@ -133,7 +134,7 @@
 	<rule ref="category/apex/errorprone.xml/AvoidNonExistentAnnotations">
 		<priority>1</priority>
 	</rule>
-	<rule ref="category/apex/errorprone.xml/AvoidDirectAccessTriggerMap" message="Avoid directly accessing Trigger.old and Trigger.new">
+	<rule ref="category/apex/errorprone.xml/AvoidDirectAccessTriggerMap">
 		<priority>4</priority>
 	</rule>
 
@@ -220,7 +221,7 @@
 
 	<!-- APEX BEST-PRACTICES -->
 
-	<rule ref="category/apex/bestpractices.xml/AvoidGlobalModifier" message="Avoid using global modifier">
+	<rule ref="category/apex/bestpractices.xml/AvoidGlobalModifier">
 		<priority>2</priority>
 	</rule>
 
@@ -253,10 +254,10 @@
 		<style>
 			div {
 				background: url('{!XSSHere}'); // Potential XSS
-			}			
-			div {					
-						background:	url('{!URLENCODE(XSSHere)}'); // correct encoding			
-			}	
+			}
+			div {
+						background:	url('{!URLENCODE(XSSHere)}'); // correct encoding
+			}
 		</style>
 	</apex:page>
 -->
@@ -282,9 +283,11 @@
 			<priority>2</priority>
 			<properties>
 				<property name="xpath">
-					<value><![CDATA[
+					<value>
+						<![CDATA[
 										//(CustomObject | CustomField)[not(description)]
-						]]></value>
+						]]>
+					</value>
 				</property>
 			</properties>
 		</rule> -->
@@ -292,7 +295,8 @@
 	<rule ref="category/apex/performance.xml/AvoidNonRestrictiveQueries">
 		<properties>
 			<property name="violationSuppressXPath">
-				<value><![CDATA[
+				<value>
+					<![CDATA[
 							//UserClass/ModifierNode[@Test=true()]
 						]]>
 				</value>
@@ -304,14 +308,13 @@
 		name="DoNotUseWithoutSharing"
 		message="Use with/inherited sharing, or include an explanation in your code to mark this a false positive"
 		class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
-		language="apex"
-	>
+		language="apex">
 		<description>Do not use without sharing outside test classes</description>
 		<priority>3</priority>
 		<properties>
 			<property name="xpath">
 				<value>
-						<![CDATA[
+					<![CDATA[
 							(UserClass/ModifierNode[@WithoutSharing=true() and @Test=false()])
 						]]>
 				</value>
@@ -323,15 +326,14 @@
 		name="ModifyOrViewAllData"
 		language="xml"
 		message="Allowing this user permission can give access and ability to modify sensitive data."
-		class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
-	>
+		class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
 		<description>Profiles and Permission Sets should not have MAD or VAD permission</description>
 		<priority>1</priority>
 		<properties>
 			<property name="xpath">
-				<value
-				><![CDATA[ //(PermissionSet | Profile)/userPermissions[ name/text[@Text='ModifyAllData' or @Text='ViewAllData'] and enabled/text[@Text='true'] ] ]]>
-					</value>
+				<value>
+					<![CDATA[ //(PermissionSet | Profile)/userPermissions[ name/text[@Text='ModifyAllData' or @Text='ViewAllData'] and enabled/text[@Text='true'] ] ]]>
+				</value>
 			</property>
 			<property name="violationSuppressXPath" value="pmd:fileName() != 'Admin.profile-meta.xml' or pmd:fileName() != 'Admin.profile'" />
 		</properties>
@@ -341,66 +343,61 @@
 		name="ModifyOrViewAllRecords"
 		language="xml"
 		message="We strongly recommends using sharing rules to grant record access rather than View All or Modify All even on module-specific objects."
-		class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
-	>
+		class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
 		<description>Profiles and Permission Sets should not have modify or view all records permission</description>
 		<priority>2</priority>
 		<properties>
 			<property name="xpath">
-				<value><![CDATA[  (//(Profile | PermissionSet)/objectPermissions/(modifyAllRecords | viewAllRecords)/text[matches(@Text, 'true')])  ]]> </value>
+				<value>
+					<![CDATA[  (//(Profile | PermissionSet)/objectPermissions/(modifyAllRecords | viewAllRecords)/text[matches(@Text, 'true')])  ]]>
+				</value>
 			</property>
 		</properties>
 	</rule>
 
-	<rule
-		name="NonPrivateObjectSharing"
-		language="xml"
-		message="All objects should use Private sharing by default."
-		class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
-	>
+	<rule name="NonPrivateObjectSharing" language="xml" message="All objects should use Private sharing by default." class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
 		<description>Require org-wide defaults to be Private for all objects</description>
 		<priority>1</priority>
 		<properties>
 			<property name="xpath">
-				<value><![CDATA[  
-	CustomObject/sharingModel/text[@Text='Read' or @Text='ReadWrite']				]]> </value>
+				<value>
+					<![CDATA[
+	CustomObject/sharingModel/text[@Text='Read' or @Text='ReadWrite']
+					]]>
+				</value>
 			</property>
 		</properties>
 	</rule>
 
-	<rule
-		name="MetadataRequiresDescription"
-		language="xml"
-		message="Add a description to explain metadata"
-		class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
-	>
+	<rule name="MetadataRequiresDescription" language="xml" message="Add a description to explain metadata" class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
 		<description>Provide a description for custom metadata</description>
 		<priority>2</priority>
 		<properties>
 			<property name="xpath">
-				<value><![CDATA[
+				<value>
+					<![CDATA[
 						//CustomField[count(description)=0]
-					]]></value>
+					]]>
+				</value>
 			</property>
 		</properties>
 	</rule>
-
 
 	<rule
 		name="ManageUsersByNonSysAdmins"
 		language="xml"
 		class="net.sourceforge.pmd.lang.rule.xpath.XPathRule"
-		message="Managing users need to be limited to System Administrator Profile only."
-	>
+		message="Managing users need to be limited to System Administrator Profile only.">
 		<description>This is a restricted permission</description>
 		<priority>1</priority>
 		<properties>
 			<property name="xpath">
-				<value><![CDATA[ //Profile/userPermissions[ pmd:fileName() != 'Admin.profile-meta.xml' and name/text[@Text='ManageUsers'] ] ]]> </value>
+				<value>
+					<![CDATA[ //Profile/userPermissions[ pmd:fileName() != 'Admin.profile-meta.xml' and name/text[@Text='ManageUsers'] ] ]]>
+				</value>
 			</property>
 		</properties>
 	</rule>
-
 
 	<!-- Metadata XML Rules -->
 
@@ -409,7 +406,9 @@
 		<priority>3</priority>
 		<properties>
 			<property name="xpath">
-				<value><![CDATA[ //apiVersion/text[number(@Image) < 55] ]]></value>
+				<value>
+					<![CDATA[ //apiVersion/text[number(@Image) < 55] ]]>
+				</value>
 			</property>
 		</properties>
 	</rule>
