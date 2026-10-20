@@ -217,8 +217,6 @@ The script takes the workflow path as an optional argument. The default is `.git
 
 The repository file can add or change rules. For example, [`.github/renovate.json`](.github/renovate.json) in this repository turns on lock file maintenance every Monday before 4 AM. Do not change commit messages in a repository file, so that all repositories get the same PR titles.
 
-[`renovate.json5`](renovate.json5) holds the older version of the shared rules. No repository uses it.
-
 The shared rules do these things:
 
 - **Commit messages and PR titles** use Conventional Commits, with the package name as the scope. Titles keep capital letters. npm titles name the dependency type and show versions without a `v`. GitHub Actions titles show the major version with a `v`.
