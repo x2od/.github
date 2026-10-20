@@ -337,7 +337,7 @@
 			</property>
 			<property
 				name="violationSuppressXPath"
-				value="pmd:fileName() != 'Admin.profile-meta.xml' or pmd:fileName() != 'Admin.profile'" />
+				value="pmd:fileName() != 'Admin.profile-meta.xml' and pmd:fileName() != 'Admin.profile'" />
 		</properties>
 	</rule>
 
