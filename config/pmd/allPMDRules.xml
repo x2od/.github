@@ -335,7 +335,9 @@
 					<![CDATA[ //(PermissionSet | Profile)/userPermissions[ name/text[@Text='ModifyAllData' or @Text='ViewAllData'] and enabled/text[@Text='true'] ] ]]>
 				</value>
 			</property>
-			<property name="violationSuppressXPath" value="pmd:fileName() != 'Admin.profile-meta.xml' or pmd:fileName() != 'Admin.profile'" />
+			<property
+				name="violationSuppressXPath"
+				value="pmd:fileName() != 'Admin.profile-meta.xml' and pmd:fileName() != 'Admin.profile'" />
 		</properties>
 	</rule>
 
@@ -355,7 +357,11 @@
 		</properties>
 	</rule>
 
-	<rule name="NonPrivateObjectSharing" language="xml" message="All objects should use Private sharing by default." class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+	<rule
+		name="NonPrivateObjectSharing"
+		language="xml"
+		message="All objects should use Private sharing by default."
+		class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
 		<description>Require org-wide defaults to be Private for all objects</description>
 		<priority>1</priority>
 		<properties>
@@ -369,7 +375,11 @@
 		</properties>
 	</rule>
 
-	<rule name="MetadataRequiresDescription" language="xml" message="Add a description to explain metadata" class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+	<rule
+		name="MetadataRequiresDescription"
+		language="xml"
+		message="Add a description to explain metadata"
+		class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
 		<description>Provide a description for custom metadata</description>
 		<priority>2</priority>
 		<properties>
@@ -401,7 +411,11 @@
 
 	<!-- Metadata XML Rules -->
 
-	<rule name="BumpApiVersion" language="xml" message="Metadata should use the latest API version." class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+	<rule
+		name="BumpApiVersion"
+		language="xml"
+		message="Metadata should use the latest API version."
+		class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
 		<description>check API version</description>
 		<priority>3</priority>
 		<properties>
