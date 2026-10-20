@@ -4,13 +4,13 @@ This repository holds the configuration that other x2od and dschach repositories
 
 ## Shared items
 
-| Item                                                                                           | How another repository uses it                                                                 | Who can use it                                                       |
-| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| [Dependabot reusable workflow](#dependabot-reusable-workflow)                                  | A short workflow file with `uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main` | Any repository. This repository is public.                           |
-| [Renovate shared configuration](#renovate-shared-configuration)                                | `"extends": ["github>x2od/.github:renovate.json5"]` in its Renovate file                       | Any repository that runs Renovate                                    |
-| [Workflow templates](#workflow-templates)                                                      | **Actions > New workflow**, in the section for the x2od organization                           | Repositories in the x2od organization only                           |
-| [Community health files and issue templates](#community-health-files-and-organization-profile) | Nothing. GitHub uses them automatically.                                                       | Repositories in the x2od organization that have no file of their own |
-| [Organization profile](#community-health-files-and-organization-profile)                       | Nothing. GitHub shows it on the organization page.                                             | Visitors to [github.com/x2od](https://github.com/x2od)               |
+| Item                                                                                           | How another repository uses it                                                                                                     | Who can use it                                                       |
+| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| [Dependabot reusable workflow](#dependabot-reusable-workflow)                                  | A short workflow file with `uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main`                                     | Any repository. This repository is public.                           |
+| [Renovate shared configuration](#renovate-shared-configuration)                                | `"extends": ["github>x2od/.github:renovate.json5"]` or<br>`"extends": ["github>x2od/.github:renovate.jsonc"]` in its Renovate file | Any repository that runs Renovate                                    |
+| [Workflow templates](#workflow-templates)                                                      | **Actions > New workflow**, in the section for the x2od organization                                                               | Repositories in the x2od organization only                           |
+| [Community health files and issue templates](#community-health-files-and-organization-profile) | Nothing. GitHub uses them automatically.                                                                                           | Repositories in the x2od organization that have no file of their own |
+| [Organization profile](#community-health-files-and-organization-profile)                       | Nothing. GitHub shows it on the organization page.                                                                                 | Visitors to [github.com/x2od](https://github.com/x2od)               |
 
 ## Dependabot reusable workflow
 
