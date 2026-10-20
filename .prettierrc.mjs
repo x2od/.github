@@ -1,4 +1,4 @@
-import x2odPrettierConfig from "@x2od/prettier-config" with { type: "json" };
+import x2odPrettierConfig from '@x2od/prettier-config' with { type: 'json' };
 
 /**
  * @see https://prettier.io/docs/configuration
@@ -9,23 +9,26 @@ const config = {
 	overrides: [
 		...x2odPrettierConfig.overrides,
 		{
-			files: "package.json",
+			files: '*.json*',
 			options: {
-				printWidth: 100
+				quoteProps: 'consistent',
+				singleQuote: false,
+				useTabs: false
 			}
 		},
 		{
-			files: "*.json5",
+			files: '*.json5',
 			options: {
-				quoteProps: "preserve",
+				parser: 'jsonc',
+				quoteProps: 'consistent',
 				singleQuote: false
 			}
 		},
 		// Extensionless "gh" scripts are shell files, so format them as sh.
 		{
-			files: "gh",
+			files: 'gh',
 			options: {
-				parser: "sh"
+				parser: 'sh'
 			}
 		}
 	]
