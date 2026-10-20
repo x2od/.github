@@ -28,3 +28,4 @@ data/
 *.txt
 *.py
 .claude
+.release-please-config.json
