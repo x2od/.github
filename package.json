@@ -16,6 +16,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
     "prettier": "^3.9.10",
+    "release-please": "^17.11.2",
     "renovate": "^44.171.1"
   },
   "allowScripts": {

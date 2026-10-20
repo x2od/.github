@@ -305,6 +305,8 @@ Ensures npm modules are installed, runs Prettier, exits with error if code is un
 
 #### Release Please
 
+This repository uses Release Please to create the changelog. The workflow file [release-please.yml](.github/workflows/release-please.yml) runs on each push to `main`. Release Please reads commit messages that follow Conventional Commits. It then creates or updates [CHANGELOG.md](CHANGELOG.md) and opens a release pull request. Merge that pull request to publish a release.
+
 #### PMD (download)
 
 #### PMD (action)
