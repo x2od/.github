@@ -6,7 +6,6 @@
     "recreateWhen": "always",
     "rebaseStalePrs": true,
     "branchTopic": "lock-file-maintenance",
-    "commitMessageAction": "Lock file maintenance",
     "semanticCommitType": "chore",
     "schedule": ["before 4am on monday"],
     "prBodyDefinitions": {

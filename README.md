@@ -7,7 +7,7 @@ This repository holds the configuration that other x2od and dschach repositories
 | Item                                                                                           | How another repository uses it                                                                                                     | Who can use it                                                       |
 | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | [Dependabot reusable workflow](#dependabot-reusable-workflow)                                  | A short workflow file with `uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main`                                     | Any repository. This repository is public.                           |
-| [Renovate shared configuration](#renovate-shared-configuration)                                | `"extends": ["github>x2od/.github:renovate.json5"]` or<br>`"extends": ["github>x2od/.github:renovate.jsonc"]` in its Renovate file | Any repository that runs Renovate                                    |
+| [Renovate shared configuration](#renovate-shared-configuration)                                | `"extends": ["github>x2od/.github:renovate.jsonc"]` in its Renovate file | Any repository that runs Renovate                                    |
 | [Workflow templates](#workflow-templates)                                                      | **Actions > New workflow**, in the section for the x2od organization                                                               | Repositories in the x2od organization only                           |
 | [Community health files and issue templates](#community-health-files-and-organization-profile) | Nothing. GitHub uses them automatically.                                                                                           | Repositories in the x2od organization that have no file of their own |
 | [Organization profile](#community-health-files-and-organization-profile)                       | Nothing. GitHub shows it on the organization page.                                                                                 | Visitors to [github.com/x2od](https://github.com/x2od)               |
@@ -206,32 +206,42 @@ The script takes the workflow path as an optional argument. The default is `.git
 
 ## Renovate shared configuration
 
-[`renovate.json5`](renovate.json5) holds the shared Renovate rules. A repository uses them with 1 line in its own Renovate file, for example `.github/renovate.json`:
+[`renovate.jsonc`](renovate.jsonc) holds the shared Renovate rules for @dschach and @x2od repositories. A repository uses them with 1 line in its own Renovate file, for example `.github/renovate.json`:
 
 ```json
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>x2od/.github:renovate.json5"]
+  "extends": ["github>x2od/.github:renovate.jsonc"]
 }
 ```
 
-The repository file can add or change rules. For example, [`.github/renovate.json`](.github/renovate.json) in this repository turns on lock file maintenance every Monday before 4 AM.
+The repository file can add or change rules. For example, [`.github/renovate.json`](.github/renovate.json) in this repository turns on lock file maintenance every Monday before 4 AM. Do not change commit messages in a repository file, so that all repositories get the same PR titles.
+
+[`renovate.json5`](renovate.json5) holds the older version of the shared rules. No repository uses it.
 
 The shared rules do these things:
 
-- **Commit messages and PR titles** use Conventional Commits, with the package name as the scope: `build(prettier): update devdependency prettier from 3.9.9 to 3.9.10` (from this repository's history).
+- **Commit messages and PR titles** use Conventional Commits, with the package name as the scope. Titles keep capital letters. npm titles name the dependency type and show versions without a `v`. GitHub Actions titles show the major version with a `v`.
 
-  | Dependency                                                        | Type    |
-  | ----------------------------------------------------------------- | ------- |
-  | npm `dependencies`                                                | `deps`  |
-  | npm `devDependencies`, `optionalDependencies`, `peerDependencies` | `build` |
-  | GitHub Actions                                                    | `ci`    |
+  | Update                                    | PR title                                                                   |
+  | ----------------------------------------- | -------------------------------------------------------------------------- |
+  | npm `devDependencies`                     | `build(@sa11y/jest): update devDependency @sa11y/jest from 8.1.1 to 8.2.0` |
+  | npm `dependencies`                        | `deps(lodash): update dependency lodash from 4.17.20 to 4.17.21`           |
+  | GitHub Action                             | `ci(actions/setup-java): update actions/setup-java action from v5 to v6`   |
+  | Version in a workflow file, such as Java  | `ci(java-jdk): update dependency java-jdk from v11 to v21`                 |
 
-- **Approval and merge:** Renovate approves major, minor, and patch updates, but does not merge them. These packages merge automatically for minor and patch updates: Prettier packages, `lint-staged`, `marked`, `mocha`, `husky`, `release-please`, and all `@x2od/` packages. Merges use a pull request and a squash.
-- **Approval on the Dependency Dashboard:** updates to the `renovate` package, and major updates to GitHub Actions, wait for approval on the Dependency Dashboard issue. Minor, patch, and digest updates to GitHub Actions are off.
-- **Pre-release packages** (version below 1.0.0) are not approved or merged automatically.
-- **Groups:** all Jest packages update together, and all ESLint plugins update together.
-- **Version ranges:** npm ranges are bumped. Peer dependency ranges are widened.
+  | Dependency                                                                         | Type    |
+  | ---------------------------------------------------------------------------------- | ------- |
+  | npm `dependencies`                                                                 | `deps`  |
+  | Other npm dependencies, such as `devDependencies` and `peerDependencies`           | `build` |
+  | GitHub Actions and other versions in workflow files                                | `ci`    |
+
+- **GitHub Actions:** only major updates. Minor, patch, digest, and replacement updates are off. This also applies to versions in workflow files, such as the Java version in `actions/setup-java`.
+- **Approval and merge:** nothing merges automatically. Renovate approves minor and patch updates. Major updates wait for approval on the Dependency Dashboard issue, and Renovate does not approve them. Updates to the `renovate` package also wait for approval on the Dependency Dashboard.
+- **Pre-release packages** (version below 1.0.0) are not approved automatically. The exception is minor and patch updates to Prettier packages, `lint-staged`, `marked`, `mocha`, `husky`, `release-please`, and all `@x2od/` packages.
+- **Several major versions behind:** each major version gets its own update.
+- **Groups:** React packages update together.
+- **Version ranges:** npm ranges are bumped. Peer dependency ranges are widened. ESLint stays below version 10.
 - **Labels:** each pull request gets the `renovate` label and its update level (`major`, `minor`, or `patch`).
 - **Other settings:** the Dependency Dashboard is on, vulnerability alerts are on, lock file maintenance is off (a repository can turn it on), and the time zone is `America/Los_Angeles`.
 
@@ -319,7 +329,7 @@ This repository uses Release Please to create the changelog. The workflow file [
 
 #### Renovate
 
-A central configuration file, `renovate.json5` is referenced from other repositories using the `renovate.json` file at `/.github/renovate.json`.
+A central configuration file, `renovate.jsonc`, is referenced from other repositories in their own Renovate file, for example `/.github/renovate.json`.
 
 ## Templates
 
