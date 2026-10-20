@@ -6,11 +6,11 @@
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
       "draft": false,
-      "prerelease": false,
+      "prerelease": true,
       "include-v-in-tag": true,
       "package-name": "",
       "include-component-in-tag": false,
-      "initial-version": "1.0.0"
+      "initial-version": "0.1.0"
     }
   },
   "extra-files": [
