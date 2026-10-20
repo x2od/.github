@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.1.1](https://github.com/x2od/.github/compare/v0.1.0...v0.1.1) (2026-10-20)
+
+
+### ✨ Features
+
+* **renovate:** combined shared preset for [@dschach](https://github.com/dschach) and [@x2od](https://github.com/x2od) ([#160](https://github.com/x2od/.github/issues/160)) ([dafdf6f](https://github.com/x2od/.github/commit/dafdf6f42164d41330da1a7e18c790ab602d012d))
+
+
+### 🔧 Miscellaneous Chores
+
+* exclude release please config from Prettier checks ([d4aa164](https://github.com/x2od/.github/commit/d4aa16450746a62ad0c645f6941b1990ec014f16))
+* **renovate:** delete unused renovate.json5 preset ([#162](https://github.com/x2od/.github/issues/162)) ([8bb6b79](https://github.com/x2od/.github/commit/8bb6b7942d4cc26c195972247b0277264454737d))
+* **renovate:** use renovate.jsonc shared preset from x2od/.github ([74e70aa](https://github.com/x2od/.github/commit/74e70aa264bdf2265c30ba2c83f46546089c4056))
+
+
+### 👷 Continuous Integration
+
+* **java-jdk:** update action java-jdk from 21.0.12+8.0.lts to v25 ([#151](https://github.com/x2od/.github/issues/151)) ([c5ef379](https://github.com/x2od/.github/commit/c5ef379d4d70d204b5365af4e6f3d035bf850950))
+
+
+### 📦 Build System
+
+* **@x2od/prettier-config:** update devdependency @x2od/prettier-config from 0.4.2 to 0.5.0 ([#161](https://github.com/x2od/.github/issues/161)) ([cb80669](https://github.com/x2od/.github/commit/cb80669b527d5794e3b71d0ab38759a7d982f35d))
+
 ## 0.1.0 (2026-10-20)
 
 
