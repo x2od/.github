@@ -7,6 +7,12 @@
 #        build(deps-dev): bump js-yaml from 4.3.0 to 4.3.2
 #        -> build(js-yaml): bump js-yaml from 4.3.0 to 4.3.2
 #      Only a missing scope, "deps", or "deps-dev" is replaced. Other scopes are kept.
+#      If the type is "deps" and only development dependencies need the npm package
+#      ("dev": true in package-lock.json), the type changes to "build":
+#        deps: bump follow-redirects from 1.16.0 to 1.16.1
+#        -> build(follow-redirects): bump follow-redirects from 1.16.0 to 1.16.1
+#      Dependabot can give the production prefix to an indirect package, for example
+#      in a security update. The "indirect-development-type" input sets the new type.
 #   2. Adds the "dependabot" label. A label error does not fail the run.
 #   3. Approves and merges the PR. The inputs set this for each update level
 #      (major, minor, patch), for security updates, and for each dependency type.
@@ -209,6 +215,14 @@ on:
         type: boolean
         required: false
         default: true
+      indirect-development-type:
+        description: >-
+          The title type for an npm package that only development dependencies need
+          ("dev": true in package-lock.json). It replaces the type "deps", which
+          Dependabot can give to an indirect package. Set to an empty string to keep "deps".
+        type: string
+        required: false
+        default: build
       create-labels:
         description: Create the "dependabot" and "auto-merged" labels if they do not exist.
         type: boolean
@@ -373,6 +387,9 @@ jobs:
         env:
           PACKAGE_NAMES: ${{ steps.metadata.outputs.dependency-names }}
           DEPENDENCY_GROUP: ${{ steps.metadata.outputs.dependency-group }}
+          ECOSYSTEM: ${{ steps.metadata.outputs.package-ecosystem }}
+          DIRECTORY: ${{ steps.metadata.outputs.directory }}
+          DEV_TYPE: ${{ inputs.indirect-development-type }}
         run: |
           summary() { printf '%s\n' "$@" >> "$GITHUB_STEP_SUMMARY"; }
           summary "### Title"
@@ -403,20 +420,59 @@ jobs:
           breaking="${BASH_REMATCH[4]}"
           description="${BASH_REMATCH[5]}"
 
-          if [[ "$scope" == "$new_scope" ]]; then
-            summary "- The title is already correct: \`$title\`"
-            exit 0
+          # Dependabot can give the production prefix ("deps") to an indirect npm package,
+          # for example in a security update. If package-lock.json marks each package
+          # "dev": true, only development dependencies need it. It then gets DEV_TYPE.
+          new_type="$type"
+          if [[ "$type" == "deps" && -n "$DEV_TYPE" && "$ECOSYSTEM" == "npm_and_yarn" ]]; then
+            dir="${DIRECTORY#/}"
+            dir="${dir%/}"
+            lock_path="${dir:+$dir/}package-lock.json"
+            lock=$(mktemp)
+            if ! err=$(gh api -H "Accept: application/vnd.github.raw+json" "repos/$GH_REPO/contents/$lock_path?ref=$HEAD_SHA" 2>&1 > "$lock"); then
+              summary "- Could not read \`$lock_path\`. The type stays \`$type\`: \`${err//$'\n'/ }\`"
+            else
+              all_dev=true
+              IFS=',' read -ra names <<< "$PACKAGE_NAMES"
+              for name in "${names[@]}"; do
+                name="${name# }"
+                kind=$(jq -r --arg n "$name" '
+                  [(.packages // {}) | to_entries[]
+                    | select(.key == "node_modules/\($n)" or (.key | endswith("/node_modules/\($n)")))]
+                  | if length == 0 then "missing" elif all(.value.dev == true) then "dev" else "not-dev" end' "$lock" 2>/dev/null || echo "unreadable")
+                case "$kind" in
+                  dev) continue ;;
+                  missing) summary "- \`$name\` is not in \`$lock_path\`. The type stays \`$type\`." ;;
+                  not-dev) summary "- \`$name\` is not only a development dependency in \`$lock_path\`. The type stays \`$type\`." ;;
+                  *) summary "- Could not read \`$lock_path\` as JSON. The type stays \`$type\`." ;;
+                esac
+                all_dev=false
+                break
+              done
+              if [[ "$all_dev" == "true" ]]; then
+                new_type="$DEV_TYPE"
+                summary "- Only development dependencies need \`$PACKAGE_NAMES\`. The type changes from \`$type\` to \`$new_type\`."
+              fi
+            fi
+            rm -f "$lock"
           fi
 
           case "$scope" in
-            "" | deps | deps-dev) ;;
+            "" | deps | deps-dev | "$new_scope") ;;
             *)
-              summary "- The scope \`$scope\` is not a Dependabot default. The title is unchanged: \`$title\`"
-              exit 0
+              if [[ "$new_type" == "$type" ]]; then
+                summary "- The scope \`$scope\` is not a Dependabot default. The title is unchanged: \`$title\`"
+                exit 0
+              fi
+              new_scope="$scope"
               ;;
           esac
 
-          new_title="${type}(${new_scope})${breaking}: ${description}"
+          new_title="${new_type}(${new_scope})${breaking}: ${description}"
+          if [[ "$new_title" == "$title" ]]; then
+            summary "- The title is already correct: \`$title\`"
+            exit 0
+          fi
           echo "New title: $new_title"
           if err=$(gh api -X PATCH "repos/$GH_REPO/pulls/$PR_NUMBER" -f title="$new_title" --silent 2>&1); then
             summary "- Old: \`$title\`" "- New: \`$new_title\`"

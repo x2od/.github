@@ -91,6 +91,46 @@ for label, title, names, msg in [
     r = run("update", TITLE, {"PACKAGE_NAMES": names, "DEPENDENCY_GROUP": ""}, {"STUB_TITLE": title})
     check(label, r["code"] == 0 and "PATCH" not in r["gh"] and msg in r["summary"], r)
 
+print("Title type for npm packages that only development dependencies need")
+LOCK = ('{"packages":{"":{},"node_modules/follow-redirects":{"dev":true},"node_modules/a/node_modules/follow-redirects":{"dev":true},'
+        '"node_modules/axios":{},"node_modules/opt":{"devOptional":true},"node_modules/@x/y":{"dev":true}}}')
+NPM = {"DEPENDENCY_GROUP": "", "ECOSYSTEM": "npm_and_yarn", "DIRECTORY": "/", "DEV_TYPE": "build"}
+FR = "deps: bump follow-redirects from 1.16.0 to 1.16.1"
+for label, title, env, stub, expect, msg in [
+    ("dev only (also nested) -> build", FR, {"PACKAGE_NAMES": "follow-redirects"}, {"STUB_LOCK": LOCK},
+     "build(follow-redirects): bump follow-redirects from 1.16.0 to 1.16.1", "changes from `deps` to `build`"),
+    ("scoped dev package -> build", "deps: bump @x/y from 1 to 2", {"PACKAGE_NAMES": "@x/y"}, {"STUB_LOCK": LOCK}, "build(@x/y): bump @x/y from 1 to 2", "to `build`"),
+    ("production package stays deps", "deps: bump axios from 1 to 2", {"PACKAGE_NAMES": "axios"}, {"STUB_LOCK": LOCK}, "deps(axios): bump axios from 1 to 2", "not only a development dependency"),
+    ("devOptional stays deps", "deps: bump opt from 1 to 2", {"PACKAGE_NAMES": "opt"}, {"STUB_LOCK": LOCK}, "deps(opt): bump opt from 1 to 2", "not only a development dependency"),
+    ("package not in lock stays deps", "deps: bump zed from 1 to 2", {"PACKAGE_NAMES": "zed"}, {"STUB_LOCK": LOCK}, "deps(zed): bump zed from 1 to 2", "is not in `package-lock.json`"),
+    ("group with 1 production package stays deps", "deps: bump the g group with 2 updates", {"PACKAGE_NAMES": "follow-redirects, axios", "DEPENDENCY_GROUP": "g"},
+     {"STUB_LOCK": LOCK}, "deps(g): bump the g group with 2 updates", "`axios` is not only"),
+    ("lock read error stays deps", FR, {"PACKAGE_NAMES": "follow-redirects"}, {"STUB_LOCK_ERR": "HTTP 404: Not Found"},
+     "deps(follow-redirects): bump follow-redirects from 1.16.0 to 1.16.1", "Could not read `package-lock.json`"),
+    ("lock not JSON stays deps", FR, {"PACKAGE_NAMES": "follow-redirects"}, {"STUB_LOCK": "<html>"},
+     "deps(follow-redirects): bump follow-redirects from 1.16.0 to 1.16.1", "as JSON"),
+    ("custom type input", FR, {"PACKAGE_NAMES": "follow-redirects", "DEV_TYPE": "chore"}, {"STUB_LOCK": LOCK},
+     "chore(follow-redirects): bump follow-redirects from 1.16.0 to 1.16.1", "to `chore`"),
+    ("custom scope kept, type changed", "deps(npm): bump follow-redirects from 1 to 2", {"PACKAGE_NAMES": "follow-redirects"}, {"STUB_LOCK": LOCK},
+     "build(npm): bump follow-redirects from 1 to 2", "to `build`"),
+    ("correct scope, type changed", "deps(follow-redirects): bump follow-redirects from 1 to 2", {"PACKAGE_NAMES": "follow-redirects"}, {"STUB_LOCK": LOCK},
+     "build(follow-redirects): bump follow-redirects from 1 to 2", "to `build`"),
+]:
+    r = run("update", TITLE, {**NPM, **env}, {"STUB_TITLE": title, **stub})
+    check(label, r["code"] == 0 and f"-f title={expect}" in r["gh"] and msg in r["summary"], r)
+
+r = run("update", TITLE, {**NPM, "PACKAGE_NAMES": "follow-redirects", "DIRECTORY": "/sub/dir/"}, {"STUB_TITLE": FR, "STUB_LOCK": LOCK})
+check("directory gives the lock path and ref", "contents/sub/dir/package-lock.json?ref=abcdef1234567890" in r["gh"] and "-f title=build(" in r["gh"], r)
+for label, env, title, expect_type in [
+    ("empty input -> no lock read", {"DEV_TYPE": ""}, FR, "deps"),
+    ("other ecosystem -> no lock read", {"ECOSYSTEM": "github_actions"}, FR, "deps"),
+    ("type build -> no lock read", {}, "build: bump follow-redirects from 1.16.0 to 1.16.1", "build"),
+]:
+    r = run("update", TITLE, {**NPM, "PACKAGE_NAMES": "follow-redirects", **env}, {"STUB_TITLE": title, "STUB_LOCK": LOCK})
+    check(label, r["code"] == 0 and "contents/" not in r["gh"] and f"-f title={expect_type}(follow-redirects)" in r["gh"], r)
+r = run("update", TITLE, {**NPM, "PACKAGE_NAMES": "follow-redirects"}, {"STUB_TITLE": "build(follow-redirects): bump x", "STUB_LOCK": LOCK})
+check("already build with scope -> already correct", r["code"] == 0 and "PATCH" not in r["gh"] and "already correct" in r["summary"], r)
+
 r = run("update", TITLE, {"PACKAGE_NAMES": "x", "DEPENDENCY_GROUP": ""}, {"STUB_TITLE": "build(deps): bump x", "STUB_PATCH_ERR": "HTTP 403: Resource not accessible"})
 check("PATCH error does not fail the step", r["code"] == 0 and "Could not change the title" in r["summary"] and "::warning" in r["stdout"], r)
 r = run("update", TITLE, {"PACKAGE_NAMES": "x"}, {"STUB_TITLE_ERR": "HTTP 500"})
