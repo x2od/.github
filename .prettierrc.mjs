@@ -8,22 +8,6 @@ const config = {
 	...x2odPrettierConfig,
 	overrides: [
 		...x2odPrettierConfig.overrides,
-		{
-			files: '*.json*',
-			options: {
-				quoteProps: 'consistent',
-				singleQuote: false,
-				useTabs: false
-			}
-		},
-		{
-			files: '*.json5',
-			options: {
-				parser: 'jsonc',
-				quoteProps: 'consistent',
-				singleQuote: false
-			}
-		},
 		// Extensionless "gh" scripts are shell files, so format them as sh.
 		{
 			files: 'gh',
