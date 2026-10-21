@@ -19,6 +19,10 @@ case "$args" in
 		[[ -n "$STUB_TITLE_ERR" ]] && fail "$STUB_TITLE_ERR"
 		echo "$STUB_TITLE"
 		;;
+	"api -H Accept: application/vnd.github.raw+json repos/"*"/contents/"*)
+		[[ -n "$STUB_LOCK_ERR" ]] && fail "$STUB_LOCK_ERR"
+		printf '%s' "$STUB_LOCK"
+		;;
 	"api -X PATCH repos/"*"/pulls/"*)
 		[[ -n "$STUB_PATCH_ERR" ]] && fail "$STUB_PATCH_ERR"
 		:
