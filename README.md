@@ -107,24 +107,30 @@ When a repository calls the workflow more than 1 time, only the call with `renam
 
 All inputs are optional.
 
-| Input                       | Type    | Default                                         | Description                                                                                                                                                                                                                         |
-| --------------------------- | ------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `autoapprove-major`         | boolean | `false`                                         | Approve major updates.                                                                                                                                                                                                              |
-| `autoapprove-minor`         | boolean | `false`                                         | Approve minor updates.                                                                                                                                                                                                              |
-| `autoapprove-patch`         | boolean | `false`                                         | Approve patch updates.                                                                                                                                                                                                              |
-| `automerge-major`           | boolean | `false`                                         | Turn on auto-merge for major updates.                                                                                                                                                                                               |
-| `automerge-minor`           | boolean | `false`                                         | Turn on auto-merge for minor updates.                                                                                                                                                                                               |
-| `automerge-patch`           | boolean | `false`                                         | Turn on auto-merge for patch updates.                                                                                                                                                                                               |
-| `autoapprove-security`      | boolean | `false`                                         | Approve updates that fix a Dependabot security alert, at all update levels. Needs the "token" secret with "Dependabot alerts: Read-only".                                                                                           |
-| `automerge-security`        | boolean | `false`                                         | Turn on auto-merge for updates that fix a Dependabot security alert, at all update levels. Needs the "token" secret with "Dependabot alerts: Read-only".                                                                            |
-| `dependency-types`          | string  | `direct:production,direct:development,indirect` | Comma-separated dependency types that this call can approve and merge. Valid values: direct:production, direct:development, indirect.                                                                                               |
-| `rename-title`              | boolean | `true`                                          | Edit the title and add the labels. When you call this workflow more than 1 time, set this to false on all calls but 1.                                                                                                              |
-| `indirect-development-type` | string  | `build`                                         | The title type for an npm package that only development dependencies need ("dev": true in package-lock.json). It replaces the type "deps", which Dependabot can give to an indirect package. Set to an empty string to keep "deps". |
-| `create-labels`             | boolean | `true`                                          | Create the "dependabot" and "auto-merged" labels if they do not exist.                                                                                                                                                              |
-| `merge-method`              | string  | `squash`                                        | The merge method: squash, merge, or rebase.                                                                                                                                                                                         |
-| `merge-mode`                | string  | `auto`                                          | How to merge. "auto": use GitHub auto-merge if the repository allows it; if not, wait for the checks in the job, then merge. "wait": always wait for the checks in the job, then merge. "now": merge at once, without a wait.       |
-| `wait-timeout-minutes`      | number  | `30`                                            | For a wait in the job: the maximum time to wait for the checks, from 1 to 50. After this time, the PR stays open.                                                                                                                   |
-| `token-user`                | string  | (empty)                                         | The login of the "token" user. Leave empty to find it automatically. The workflow uses it to find its own approvals and its own merges.                                                                                             |
+| Input                       | Type    | Default                                         | Description                                                                                                                                                                                                                                        |
+| --------------------------- | ------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `autoapprove-major`         | boolean | `false`                                         | Approve major updates.                                                                                                                                                                                                                             |
+| `autoapprove-minor`         | boolean | `false`                                         | Approve minor updates.                                                                                                                                                                                                                             |
+| `autoapprove-patch`         | boolean | `false`                                         | Approve patch updates.                                                                                                                                                                                                                             |
+| `automerge-major`           | boolean | `false`                                         | Turn on auto-merge for major updates.                                                                                                                                                                                                              |
+| `automerge-minor`           | boolean | `false`                                         | Turn on auto-merge for minor updates.                                                                                                                                                                                                              |
+| `automerge-patch`           | boolean | `false`                                         | Turn on auto-merge for patch updates.                                                                                                                                                                                                              |
+| `autoapprove-security`      | boolean | `false`                                         | Approve updates that fix a Dependabot security alert, at all update levels. Needs the "token" secret with "Dependabot alerts: Read-only".                                                                                                          |
+| `automerge-security`        | boolean | `false`                                         | Turn on auto-merge for updates that fix a Dependabot security alert, at all update levels. Needs the "token" secret with "Dependabot alerts: Read-only".                                                                                           |
+| `dependency-types`          | string  | `direct:production,direct:development,indirect` | Comma-separated dependency types that this call can approve and merge. Valid values: direct:production, direct:development, indirect.                                                                                                              |
+| `autoapprove-production`    | string  | (empty)                                         | Approve these levels for direct:production dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the autoapprove-major/minor/patch/security inputs for this dependency type.               |
+| `automerge-production`      | string  | (empty)                                         | Turn on auto-merge for these levels for direct:production dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the automerge-major/minor/patch/security inputs for this dependency type.  |
+| `autoapprove-development`   | string  | (empty)                                         | Approve these levels for direct:development dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the autoapprove-major/minor/patch/security inputs for this dependency type.              |
+| `automerge-development`     | string  | (empty)                                         | Turn on auto-merge for these levels for direct:development dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the automerge-major/minor/patch/security inputs for this dependency type. |
+| `autoapprove-indirect`      | string  | (empty)                                         | Approve these levels for indirect dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the autoapprove-major/minor/patch/security inputs for this dependency type.                        |
+| `automerge-indirect`        | string  | (empty)                                         | Turn on auto-merge for these levels for indirect dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the automerge-major/minor/patch/security inputs for this dependency type.           |
+| `rename-title`              | boolean | `true`                                          | Edit the title and add the labels. When you call this workflow more than 1 time, set this to false on all calls but 1.                                                                                                                             |
+| `indirect-development-type` | string  | `build`                                         | The title type for an npm package that only development dependencies need ("dev": true in package-lock.json). It replaces the type "deps", which Dependabot can give to an indirect package. Set to an empty string to keep "deps".                |
+| `create-labels`             | boolean | `true`                                          | Create the "dependabot" and "auto-merged" labels if they do not exist.                                                                                                                                                                             |
+| `merge-method`              | string  | `squash`                                        | The merge method: squash, merge, or rebase.                                                                                                                                                                                                        |
+| `merge-mode`                | string  | `auto`                                          | How to merge. "auto": use GitHub auto-merge if the repository allows it; if not, wait for the checks in the job, then merge. "wait": always wait for the checks in the job, then merge. "now": merge at once, without a wait.                      |
+| `wait-timeout-minutes`      | number  | `30`                                            | For a wait in the job: the maximum time to wait for the checks, from 1 to 50. After this time, the PR stays open.                                                                                                                                  |
+| `token-user`                | string  | (empty)                                         | The login of the "token" user. Leave empty to find it automatically. The workflow uses it to find its own approvals and its own merges.                                                                                                            |
 
 ### The `token` secret
 
@@ -166,28 +172,24 @@ A classic PAT needs the `repo` scope and the `workflow` scope. A fine-grained PA
 
 ### Different rules for each dependency type
 
-Call the workflow 2 or more times, with 1 job for each call. Give each call its own `dependency-types` value and its own booleans. Set `rename-title: false` on all calls but 1.
+Use the per-type inputs in 1 call: `autoapprove-production`, `automerge-production`, `autoapprove-development`, `automerge-development`, `autoapprove-indirect`, and `automerge-indirect`. Each one is a comma-separated list of `major`, `minor`, `patch`, and `security` (or `none`). If a list is set, it replaces the `autoapprove-*` or `automerge-*` booleans for PRs of that dependency type. If a list is empty (the default), the booleans apply.
 
 ```yaml
 jobs:
-  production:
+  dependabot:
     uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main
     with:
-      dependency-types: direct:production
-      autoapprove-patch: true
-      automerge-patch: true
-  development:
-    uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main
-    with:
-      dependency-types: direct:development
-      rename-title: false
-      autoapprove-minor: true
-      autoapprove-patch: true
-      automerge-minor: true
-      automerge-patch: true
+      autoapprove-production: patch,security
+      automerge-production: patch,security
+      autoapprove-development: minor,patch,security
+      automerge-development: minor,patch,security
+      autoapprove-indirect: minor,patch,security
+      automerge-indirect: patch,security
 ```
 
-(Each job also needs the `if`, `permissions`, and `secrets` lines from the first example.)
+(The job also needs the `if`, `permissions`, and `secrets` lines from the first example.)
+
+1 call is 1 job, so every Dependabot event uses 1 runner. You can still call the workflow 2 or more times, each with its own `dependency-types` value. Then each call is a separate job with its own runner, and you set `rename-title: false` on all calls but 1.
 
 ### Tests
 

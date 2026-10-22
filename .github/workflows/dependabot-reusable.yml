@@ -70,26 +70,24 @@
 #
 # Different rules for each dependency type:
 #
-#   Call this workflow 2 or more times, with 1 job for each call. Give each call its
-#   own "dependency-types" and its own booleans. Set "rename-title: false" on all
-#   calls but 1. The title edit and all label steps then run only 1 time.
+#   Use the per-type inputs in 1 call. Each one is a comma-separated list of major,
+#   minor, patch, and security (or "none"). If a list is set, it replaces the
+#   autoapprove-* or automerge-* booleans for PRs of that dependency type.
 #
 #     jobs:
-#       production:
+#       dependabot:
 #         uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main
 #         with:
-#           dependency-types: direct:production,indirect
-#           autoapprove-patch: true
-#           automerge-patch: true
-#       development:
-#         uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main
-#         with:
-#           dependency-types: direct:development
-#           rename-title: false
-#           autoapprove-minor: true
-#           autoapprove-patch: true
-#           automerge-minor: true
-#           automerge-patch: true
+#           autoapprove-production: patch,security
+#           automerge-production: patch,security
+#           autoapprove-development: minor,patch,security
+#           automerge-development: minor,patch,security
+#           autoapprove-indirect: minor,patch,security
+#           automerge-indirect: patch,security
+#
+#   1 call is 1 job, so each Dependabot event uses 1 runner. You can still call this
+#   workflow 2 or more times, each with its own "dependency-types". Then each call
+#   is a separate job, and you set "rename-title: false" on all calls but 1.
 #
 # ---------------------------------------------------------------------------------
 # THE OPTIONAL "token" SECRET
@@ -208,6 +206,54 @@ on:
         type: string
         required: false
         default: direct:production,direct:development,indirect
+      autoapprove-production:
+        description: >-
+          Approve these levels for direct:production dependencies, as a comma-separated list
+          of major, minor, patch, and security (or "none"). If set, it replaces the
+          autoapprove-major/minor/patch/security inputs for this dependency type.
+        type: string
+        required: false
+        default: ''
+      automerge-production:
+        description: >-
+          Turn on auto-merge for these levels for direct:production dependencies, as a comma-separated list
+          of major, minor, patch, and security (or "none"). If set, it replaces the
+          automerge-major/minor/patch/security inputs for this dependency type.
+        type: string
+        required: false
+        default: ''
+      autoapprove-development:
+        description: >-
+          Approve these levels for direct:development dependencies, as a comma-separated list
+          of major, minor, patch, and security (or "none"). If set, it replaces the
+          autoapprove-major/minor/patch/security inputs for this dependency type.
+        type: string
+        required: false
+        default: ''
+      automerge-development:
+        description: >-
+          Turn on auto-merge for these levels for direct:development dependencies, as a comma-separated list
+          of major, minor, patch, and security (or "none"). If set, it replaces the
+          automerge-major/minor/patch/security inputs for this dependency type.
+        type: string
+        required: false
+        default: ''
+      autoapprove-indirect:
+        description: >-
+          Approve these levels for indirect dependencies, as a comma-separated list
+          of major, minor, patch, and security (or "none"). If set, it replaces the
+          autoapprove-major/minor/patch/security inputs for this dependency type.
+        type: string
+        required: false
+        default: ''
+      automerge-indirect:
+        description: >-
+          Turn on auto-merge for these levels for indirect dependencies, as a comma-separated list
+          of major, minor, patch, and security (or "none"). If set, it replaces the
+          automerge-major/minor/patch/security inputs for this dependency type.
+        type: string
+        required: false
+        default: ''
       rename-title:
         description: >-
           Edit the title and add the labels. When you call this workflow more than
@@ -330,7 +376,11 @@ jobs:
       - name: Look up the Dependabot security alert
         id: alert
         # The alert lookup needs a PAT. If it fails, the PR is not a security update.
-        if: ${{ env.HAS_TOKEN == 'true' && (inputs.autoapprove-security || inputs.automerge-security) }}
+        if: >-
+          ${{ env.HAS_TOKEN == 'true' && (inputs.autoapprove-security || inputs.automerge-security ||
+          contains(format('{0},{1},{2},{3},{4},{5}', inputs.autoapprove-production, inputs.automerge-production,
+          inputs.autoapprove-development, inputs.automerge-development, inputs.autoapprove-indirect,
+          inputs.automerge-indirect), 'security')) }}
         continue-on-error: true
         uses: dependabot/fetch-metadata@v3
         with:
@@ -512,9 +562,39 @@ jobs:
           MERGE_MINOR: ${{ inputs.automerge-minor }}
           MERGE_PATCH: ${{ inputs.automerge-patch }}
           MERGE_SECURITY: ${{ inputs.automerge-security }}
+          APPROVE_PRODUCTION: ${{ inputs.autoapprove-production }}
+          MERGE_PRODUCTION: ${{ inputs.automerge-production }}
+          APPROVE_DEVELOPMENT: ${{ inputs.autoapprove-development }}
+          MERGE_DEVELOPMENT: ${{ inputs.automerge-development }}
+          APPROVE_INDIRECT: ${{ inputs.autoapprove-indirect }}
+          MERGE_INDIRECT: ${{ inputs.automerge-indirect }}
         run: |
           summary() { printf '%s\n' "$@" >> "$GITHUB_STEP_SUMMARY"; }
           summary "### Approve and merge"
+
+          # True if the comma-separated list $1 contains $2. Spaces are ignored.
+          in_list() {
+            local list="${1//[[:space:]]/}"
+            [[ ",$list," == *",$2,"* ]]
+          }
+
+          # Text for the summary: which input made the decision.
+          # $1 input name, $2 per-type list (empty = boolean input), $3 level, $4 yes/no,
+          # $5 boolean input name to use when $1 is empty.
+          rule_text() {
+            local name="${1:-$5}"
+            if [[ -n "$2" ]]; then
+              if [[ "$4" == "yes" ]]; then
+                printf "\`%s\` includes \`%s\`." "$name" "$3"
+              else
+                printf "\`%s\` (\`%s\`) does not include \`%s\`." "$name" "$2" "$3"
+              fi
+            elif [[ "$4" == "yes" ]]; then
+              printf "\`%s\` is \`true\`." "$name"
+            else
+              printf "\`%s\` is \`false\`." "$name"
+            fi
+          }
 
           case "$MERGE_METHOD" in
             squash | merge | rebase) ;;
@@ -537,6 +617,23 @@ jobs:
             summary "- :x: The \`wait-timeout-minutes\` input must be a whole number from 1 to 50. The value is \`$WAIT_TIMEOUT_MINUTES\`."
             exit 1
           fi
+          for pair in "autoapprove-production=$APPROVE_PRODUCTION" "automerge-production=$MERGE_PRODUCTION" \
+            "autoapprove-development=$APPROVE_DEVELOPMENT" "automerge-development=$MERGE_DEVELOPMENT" \
+            "autoapprove-indirect=$APPROVE_INDIRECT" "automerge-indirect=$MERGE_INDIRECT"; do
+            name="${pair%%=*}"
+            value="${pair#*=}"
+            IFS=',' read -ra items <<< "${value//[[:space:]]/}"
+            for item in "${items[@]}"; do
+              case "$item" in
+                major | minor | patch | security | none) ;;
+                *)
+                  echo "::error title=Bad input::$name must list major, minor, patch, security, or none. The value is '$value'."
+                  summary "- :x: The \`$name\` input must be a comma-separated list of \`major\`, \`minor\`, \`patch\`, and \`security\` (or \`none\`). The value is \`$value\`."
+                  exit 1
+                  ;;
+              esac
+            done
+          done
 
           case "$UPDATE_TYPE" in
             version-update:semver-major) level=major approve_level="$APPROVE_MAJOR" merge_level="$MERGE_MAJOR" ;;
@@ -544,6 +641,35 @@ jobs:
             version-update:semver-patch) level=patch approve_level="$APPROVE_PATCH" merge_level="$MERGE_PATCH" ;;
             *) level="" approve_level=false merge_level=false ;;
           esac
+          approve_security="$APPROVE_SECURITY"
+          merge_security="$MERGE_SECURITY"
+
+          # Per-type rules. A non-empty autoapprove-<type> or automerge-<type> list replaces
+          # the boolean inputs for PRs of that dependency type.
+          case "$DEPENDENCY_TYPE" in
+            direct:production) type_key=production approve_list="$APPROVE_PRODUCTION" merge_list="$MERGE_PRODUCTION" ;;
+            direct:development) type_key=development approve_list="$APPROVE_DEVELOPMENT" merge_list="$MERGE_DEVELOPMENT" ;;
+            indirect) type_key=indirect approve_list="$APPROVE_INDIRECT" merge_list="$MERGE_INDIRECT" ;;
+            *) type_key="" approve_list="" merge_list="" ;;
+          esac
+          approve_list="${approve_list//[[:space:]]/}"
+          merge_list="${merge_list//[[:space:]]/}"
+          approve_name="autoapprove-${level:-security}"
+          merge_name="automerge-${level:-security}"
+          if [[ -n "$approve_list" ]]; then
+            approve_name="autoapprove-$type_key"
+            approve_level=false
+            approve_security=false
+            if [[ -n "$level" ]] && in_list "$approve_list" "$level"; then approve_level=true; fi
+            if in_list "$approve_list" security; then approve_security=true; fi
+          fi
+          if [[ -n "$merge_list" ]]; then
+            merge_name="automerge-$type_key"
+            merge_level=false
+            merge_security=false
+            if [[ -n "$level" ]] && in_list "$merge_list" "$level"; then merge_level=true; fi
+            if in_list "$merge_list" security; then merge_security=true; fi
+          fi
 
           type_allowed=false
           IFS=',' read -ra allowed_types <<< "$DEPENDENCY_TYPES"
@@ -560,7 +686,7 @@ jobs:
           fi
 
           # Security alert row
-          if [[ "$APPROVE_SECURITY" == "true" || "$MERGE_SECURITY" == "true" ]]; then
+          if [[ "$approve_security" == "true" || "$merge_security" == "true" ]]; then
             if [[ "$HAS_TOKEN" != "true" ]]; then
               summary "- :information_source: Security alert: not checked. The alert lookup needs the \`token\` secret, stored as a Dependabot secret."
             elif [[ "$ALERT_OUTCOME" == "failure" ]]; then
@@ -584,22 +710,22 @@ jobs:
             # Approve
             if [[ "$approve_level" == "true" ]]; then
               approve=true
-              summary "- :white_check_mark: Approve: yes. \`autoapprove-$level\` is \`true\`."
-            elif [[ "$security" == "true" && "$APPROVE_SECURITY" == "true" ]]; then
+              summary "- :white_check_mark: Approve: yes. $(rule_text "$approve_name" "$approve_list" "$level" yes)"
+            elif [[ "$security" == "true" && "$approve_security" == "true" ]]; then
               approve=true
-              summary "- :white_check_mark: Approve: yes. This is a security update and \`autoapprove-security\` is \`true\`."
+              summary "- :white_check_mark: Approve: yes. This is a security update, and $(rule_text "${approve_list:+autoapprove-$type_key}" "$approve_list" security yes autoapprove-security)"
             else
-              summary "- :no_entry_sign: Approve: no. \`autoapprove-${level:-security}\` is \`false\`."
+              summary "- :no_entry_sign: Approve: no. $(rule_text "$approve_name" "$approve_list" "${level:-security}" no)"
             fi
             # Merge
             if [[ "$merge_level" == "true" ]]; then
               merge=true
-              summary "- :white_check_mark: Merge: yes. \`automerge-$level\` is \`true\`."
-            elif [[ "$security" == "true" && "$MERGE_SECURITY" == "true" ]]; then
+              summary "- :white_check_mark: Merge: yes. $(rule_text "$merge_name" "$merge_list" "$level" yes)"
+            elif [[ "$security" == "true" && "$merge_security" == "true" ]]; then
               merge=true
-              summary "- :white_check_mark: Merge: yes. This is a security update and \`automerge-security\` is \`true\`."
+              summary "- :white_check_mark: Merge: yes. This is a security update, and $(rule_text "${merge_list:+automerge-$type_key}" "$merge_list" security yes automerge-security)"
             else
-              summary "- :no_entry_sign: Merge: no. \`automerge-${level:-security}\` is \`false\`."
+              summary "- :no_entry_sign: Merge: no. $(rule_text "$merge_name" "$merge_list" "${level:-security}" no)"
             fi
             if [[ "$merge" == "true" && "$approve" != "true" ]]; then
               summary "- :information_source: Merge without approval works only if the repository does not require a review."

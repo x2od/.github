@@ -192,6 +192,34 @@ for bad in ("0", "51", "abc", "2.5"):
 r = dec(WAIT_TIMEOUT_MINUTES="50", MERGE_MODE="wait", APPROVE_PATCH="true")
 check("wait-timeout 50 + wait mode ok", r["code"] == 0 and r["out"]["approve"] == "true", r)
 
+# Per-type lists (autoapprove-<type> / automerge-<type>) replace the booleans for that type
+r = dec(DEPENDENCY_TYPE="indirect", UPDATE_TYPE="version-update:semver-minor", APPROVE_INDIRECT="minor,patch", MERGE_INDIRECT="patch")
+check("per-type: indirect minor approved, not merged", r["out"]["approve"] == "true" and r["out"]["merge"] == "false"
+      and "`autoapprove-indirect` includes `minor`" in r["summary"] and "`automerge-indirect` (`patch`) does not include `minor`" in r["summary"], r)
+r = dec(DEPENDENCY_TYPE="direct:production", UPDATE_TYPE="version-update:semver-patch", APPROVE_PATCH="true", MERGE_PATCH="true", APPROVE_PRODUCTION="none", MERGE_PRODUCTION="none")
+check("per-type: none overrides true booleans", r["out"]["approve"] == "false" and r["out"]["merge"] == "false", r)
+r = dec(DEPENDENCY_TYPE="direct:development", UPDATE_TYPE="version-update:semver-patch", APPROVE_PATCH="true", APPROVE_PRODUCTION="none")
+check("per-type: other type's list does not apply", r["out"]["approve"] == "true" and "`autoapprove-patch` is `true`" in r["summary"], r)
+r = dec(DEPENDENCY_TYPE="direct:development", UPDATE_TYPE="version-update:semver-major", APPROVE_DEVELOPMENT=" minor , patch ", MERGE_DEVELOPMENT="minor,patch")
+check("per-type: spaces ignored, major not in list", r["out"]["approve"] == "false" and r["out"]["merge"] == "false", r)
+r = dec(DEPENDENCY_TYPE="indirect", UPDATE_TYPE="version-update:semver-major", GHSA_ID="GHSA-1", HAS_TOKEN="true", ALERT_OUTCOME="success",
+        APPROVE_INDIRECT="patch,security", MERGE_INDIRECT="security")
+check("per-type: security in list approves and merges a major security fix", r["out"]["approve"] == "true" and r["out"]["merge"] == "true"
+      and "`automerge-indirect` includes `security`" in r["summary"] and "GHSA-1" in r["summary"], r)
+r = dec(DEPENDENCY_TYPE="indirect", UPDATE_TYPE="version-update:semver-major", GHSA_ID="GHSA-1", HAS_TOKEN="true", ALERT_OUTCOME="success",
+        APPROVE_SECURITY="true", MERGE_SECURITY="true", APPROVE_INDIRECT="patch", MERGE_INDIRECT="patch")
+check("per-type: list without security overrides true security booleans", r["out"]["approve"] == "false" and r["out"]["merge"] == "false", r)
+r = dec(DEPENDENCY_TYPE="direct:production", UPDATE_TYPE="version-update:semver-patch", APPROVE_PRODUCTION="patch,security", HAS_TOKEN="false")
+check("per-type: security in list shows the alert row", "needs the `token` secret" in r["summary"], r)
+r = dec(DEPENDENCY_TYPE="direct:production", UPDATE_TYPE="version-update:semver-minor", MERGE_PRODUCTION="minor", APPROVE_PRODUCTION="none")
+check("per-type: merge without approval warns", r["out"]["merge"] == "true" and r["out"]["approve"] == "false" and "Merge without approval" in r["summary"], r)
+r = dec(DEPENDENCY_TYPE="direct:production", UPDATE_TYPE="version-update:semver-minor", APPROVE_PRODUCTION="minor", MERGE_PRODUCTION="minor",
+        DEPENDENCY_TYPES="direct:development")
+check("per-type: dependency-types filter still applies", r["out"]["approve"] == "false" and "is not in `dependency-types`" in r["summary"], r)
+for name, var, bad in (("autoapprove-indirect", "APPROVE_INDIRECT", "minor,huge"), ("automerge-production", "MERGE_PRODUCTION", "true")):
+    r = dec(**{var: bad})
+    check(f"per-type: bad value in {name} fails", r["code"] == 1 and f"`{name}` input must be" in r["summary"], r)
+
 print("Approve")
 APP = "Approve the PR"
 r = run("update", APP, {"TOKEN_USER": "github-actions[bot]", "LEVEL": "patch"}, {"STUB_REVIEWS": ""})
