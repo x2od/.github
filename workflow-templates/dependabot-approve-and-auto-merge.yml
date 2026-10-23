@@ -3,33 +3,24 @@
 # explained at the top of:
 # https://github.com/x2od/.github/blob/main/.github/workflows/dependabot-reusable.yml
 #
-# This starter approves and merges ALL Dependabot PRs: major, minor, patch, and
-# security updates, for all 3 dependency types. The security inputs need the token
-# secret with "Dependabot alerts: Read-only". Without it, they do nothing.
+# Rules, for all 3 dependency types (production, development, and indirect):
+#   - Approve and merge minor and patch updates. Major updates need a manual review.
+#   - Approve and merge security updates at all levels, including major. This needs
+#     the token secret with "Dependabot alerts: Read-only".
 #
-# It calls the reusable workflow 3 times, 1 time for each dependency type, to show
-# how the calls work together. Each PR has exactly 1 dependency type, so exactly
-# 1 call approves and merges it.
-#
-# All 3 calls edit the title and add the labels ("rename-title" defaults to true).
-# These steps give the same result each time, so the extra runs do no damage, but
-# each call writes its own job summary. To do these steps only 1 time, set
-# "rename-title: false" on all calls but 1.
-#
-# Here, all 3 calls have the same inputs, so 1 call is enough. To give 2 or more
-# dependency types the same outcome, put them in 1 comma-separated list, for example:
-#     dependency-types: direct:production,direct:development,indirect
-# A call without "dependency-types" also handles all 3 types (that is the default).
-# Use separate calls only when the dependency types need different inputs.
+# 1 call (1 job, 1 runner) handles all 3 dependency types. Each autoapprove-<type>
+# and automerge-<type> input is a comma-separated list of major, minor, patch, and
+# security (or "none"). To give a dependency type different rules, change its 2
+# lists.
 #
 # Before you use this workflow, check these repository settings:
 #   - Settings > General > "Allow auto-merge". If it is off (or not available, for
 #     example in a private repository on a free plan), the workflow waits for the
-#     checks and then merges.
+#     other checks to pass, and then merges (merge-mode: auto).
 #   - Settings > Actions > General > "Allow GitHub Actions to create and approve
 #     pull requests" (only if you do not pass the token secret)
 
-name: Dependabot
+name: Dependabot update
 
 on:
   # pull_request_target gives Dependabot PRs a writable GITHUB_TOKEN. The reusable
@@ -41,7 +32,7 @@ on:
 permissions: {}
 
 jobs:
-  production:
+  dependabot:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     permissions:
       contents: write # merge the PR
@@ -49,64 +40,17 @@ jobs:
       issues: write # create labels and add them to the PR
     uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main
     with:
-      # All inputs are optional. All booleans default to false, except
-      # rename-title and create-labels (default true).
-      dependency-types: direct:production
-      autoapprove-major: true
-      autoapprove-minor: true
-      autoapprove-patch: true
-      autoapprove-security: true
-      automerge-major: true
-      automerge-minor: true
-      automerge-patch: true
-      automerge-security: true
-      # merge-method: squash
-      # merge-mode: auto # auto (GitHub auto-merge, or wait if it is off), wait, or now
-      # wait-timeout-minutes: 30
+      autoapprove-production: minor,patch,security
+      automerge-production: minor,patch,security
+      autoapprove-development: minor,patch,security
+      automerge-development: minor,patch,security
+      autoapprove-indirect: minor,patch,security
+      automerge-indirect: minor,patch,security
     secrets:
-      # Optional. Store the PAT 2 times, with this same name: as a Dependabot secret
+      # Optional PAT. Store it 2 times, with this same name: as a Dependabot secret
       # (runs that Dependabot starts can read only Dependabot secrets) and as an
-      # Actions secret (for the run after the merge). Without it, the workflow uses
-      # the GITHUB_TOKEN. Then the merge does not start other workflows, and the
-      # labels after an auto-merge are not added.
-      token: ${{ secrets.DEPENDABOT_TOKEN_X2OD }}
-
-  development:
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
-    permissions:
-      contents: write
-      pull-requests: write
-      issues: write
-    uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main
-    with:
-      dependency-types: direct:development
-      autoapprove-major: true
-      autoapprove-minor: true
-      autoapprove-patch: true
-      autoapprove-security: true
-      automerge-major: true
-      automerge-minor: true
-      automerge-patch: true
-      automerge-security: true
-    secrets:
-      token: ${{ secrets.DEPENDABOT_TOKEN_X2OD }}
-
-  indirect:
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
-    permissions:
-      contents: write
-      pull-requests: write
-      issues: write
-    uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main
-    with:
-      dependency-types: indirect
-      autoapprove-major: true
-      autoapprove-minor: true
-      autoapprove-patch: true
-      autoapprove-security: true
-      automerge-major: true
-      automerge-minor: true
-      automerge-patch: true
-      automerge-security: true
-    secrets:
+      # Actions secret (for the run after the merge). The x2od organization uses the
+      # name DEPENDABOT_TOKEN_X2OD. Without it, the workflow uses the GITHUB_TOKEN.
+      # Then the merge does not start other workflows, the labels after an
+      # auto-merge are not added, and security updates are not found.
       token: ${{ secrets.DEPENDABOT_TOKEN_X2OD }}
