@@ -27,7 +27,7 @@
 #
 # A starter caller is in x2od/.github/workflow-templates/dependabot-approve-and-auto-merge.yml.
 #
-#   name: Dependabot
+#   name: Dependabot on Pull Request
 #   on:
 #     pull_request_target:
 #       types: [opened, reopened, synchronize, edited, closed]
@@ -48,10 +48,14 @@
 #
 # Rules for the caller:
 #
-#   - Use the "pull_request_target" event, not "pull_request". On "pull_request",
-#     Dependabot runs get a read-only GITHUB_TOKEN. On "pull_request_target", the
-#     GITHUB_TOKEN can write. This workflow never checks out or runs code from the
-#     pull request, so "pull_request_target" is safe here.
+#   - Use the "pull_request_target" event, not "pull_request". The jobs in this
+#     workflow run only on "pull_request_target". This workflow never checks out or
+#     runs code from the pull request, so the event is safe here.
+#   - From 2026-11-02, GitHub blocks "pull_request_target" in public repositories
+#     unless an Actions event policy allows it. Name the caller file
+#     dependabot-update.yml, and add the repository policy "Allow pull_request_target
+#     for the Dependabot workflow" (Settings > Actions > Policies) to each public
+#     repository. An organization policy needs the GitHub Team plan.
 #   - Include all 5 event types above. "closed" is necessary for task 4.
 #   - Give the caller job all 3 permissions above. A called workflow cannot get
 #     more permissions than its caller. If one permission is missing, GitHub
