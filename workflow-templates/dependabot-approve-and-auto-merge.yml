@@ -24,11 +24,18 @@
 #   - Settings > Actions > General > "Allow GitHub Actions to create and approve
 #     pull requests" (only if you do not pass the token secret)
 
-name: Dependabot PR Update
+name: Dependabot on Pull Request
 
 on:
   # pull_request_target gives Dependabot PRs a writable GITHUB_TOKEN. The reusable
   # workflow never checks out code from the PR.
+  #
+  # From 2026-11-02, GitHub blocks pull_request_target in public repositories unless an
+  # Actions event policy allows it. Save this file as .github/workflows/dependabot-update.yml.
+  # In an x2od repository, the organization policy "Allow pull_request_target for the
+  # Dependabot workflow" allows the event for that file. In another organization or a
+  # personal account, add a repository policy (Settings > Actions > Policies) that
+  # allows pull_request_target for that file.
   # Keep all 5 types. "closed" adds the labels after the merge.
   pull_request_target:
     types: [opened, reopened, synchronize, edited, closed]
