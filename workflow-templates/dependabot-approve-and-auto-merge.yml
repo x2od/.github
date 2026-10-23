@@ -3,15 +3,19 @@
 # explained at the top of:
 # https://github.com/x2od/.github/blob/main/.github/workflows/dependabot-reusable.yml
 #
-# Rules, for all 3 dependency types (production, development, and indirect):
-#   - Approve and merge minor and patch updates. Major updates need a manual review.
-#   - Approve and merge security updates at all levels, including major. This needs
-#     the token secret with "Dependabot alerts: Read-only".
+# This file passes every input of the reusable workflow, each set to its default
+# value. With these defaults, the workflow edits the PR title and adds the labels,
+# but it does not approve or merge any PR. To approve and merge, change the inputs
+# below. For example, the x2od and dschach callers set the 6 per-type inputs to
+# "minor,patch,security".
 #
-# 1 call (1 job, 1 runner) handles all 3 dependency types. Each autoapprove-<type>
-# and automerge-<type> input is a comma-separated list of major, minor, patch, and
-# security (or "none"). To give a dependency type different rules, change its 2
-# lists.
+# How the approve and merge inputs work together:
+#   - The 6 per-type inputs (autoapprove-<type> and automerge-<type>) take a
+#     comma-separated list of major, minor, patch, and security (or "none"). If set,
+#     a per-type input replaces the 4 boolean inputs of the same kind for that
+#     dependency type.
+#   - The 8 boolean inputs apply to each dependency type that has no per-type input.
+#   - The security inputs need the token secret with "Dependabot alerts: Read-only".
 #
 # Before you use this workflow, check these repository settings:
 #   - Settings > General > "Allow auto-merge". If it is off (or not available, for
@@ -20,7 +24,7 @@
 #   - Settings > Actions > General > "Allow GitHub Actions to create and approve
 #     pull requests" (only if you do not pass the token secret)
 
-name: Dependabot update
+name: Dependabot PR update
 
 on:
   # pull_request_target gives Dependabot PRs a writable GITHUB_TOKEN. The reusable
@@ -40,12 +44,39 @@ jobs:
       issues: write # create labels and add them to the PR
     uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main
     with:
+      # Boolean approve and merge inputs, for each dependency type without a
+      # per-type input.
+      autoapprove-major: false
+      autoapprove-minor: false
+      autoapprove-patch: false
+      automerge-major: false
+      automerge-minor: false
+      automerge-patch: false
+      autoapprove-security: false # needs "Dependabot alerts: Read-only"
+      automerge-security: false # needs "Dependabot alerts: Read-only"
+      # The dependency types that this call can approve and merge.
+      dependency-types: direct:production,direct:development,indirect
+      # Per-type lists: major, minor, patch, and security (or "none"). Empty means
+      # "use the boolean inputs above".
       autoapprove-production: minor,patch,security
       automerge-production: minor,patch,security
       autoapprove-development: minor,patch,security
       automerge-development: minor,patch,security
-      autoapprove-indirect: minor,patch,security
-      automerge-indirect: minor,patch,security
+      autoapprove-indirect: ''
+      automerge-indirect: ''
+      # Edit the title and add the labels. With more than 1 call, set false on all
+      # calls but 1.
+      rename-title: true
+      # Title type for an indirect npm package that only development dependencies
+      # need. An empty string keeps "deps".
+      indirect-development-type: build
+      # Create the "dependabot" and "auto-merged" labels if they do not exist.
+      create-labels: true
+      merge-method: squash # squash, merge, or rebase
+      merge-mode: auto # auto (GitHub auto-merge, or wait if it is off), wait, or now
+      wait-timeout-minutes: 30 # 1 to 50; for a wait in the job
+      # The login of the token user. Empty finds it automatically.
+      token-user: ''
     secrets:
       # Optional PAT. Store it 2 times, with this same name: as a Dependabot secret
       # (runs that Dependabot starts can read only Dependabot secrets) and as an
