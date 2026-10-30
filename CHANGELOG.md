@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.1.2](https://github.com/x2od/.github/compare/v0.1.1...v0.1.2) (2026-10-30)
+
+
+### ✨ Features
+
+* **dependabot-reusable:** add per-type approve and merge inputs ([#167](https://github.com/x2od/.github/issues/167)) ([600b66f](https://github.com/x2od/.github/commit/600b66f020656b9a45800284dfc89c40699e7062))
+
+
+### 🔧 Miscellaneous Chores
+
+* **prettier:** remove JSON and JSON5 formatting overrides ([67ccaa6](https://github.com/x2od/.github/commit/67ccaa67889a772b7e3f3d11a47b914b882e52bc))
+
+
+### 🐛 Bug Fixes
+
+* **dependabot-reusable:** use build for indirect packages of devDependencies ([#166](https://github.com/x2od/.github/issues/166)) ([3ccde8f](https://github.com/x2od/.github/commit/3ccde8fec1080cc26f9e02a880288470716cc7d9))
+
+
+### ⚡ Performance Improvements
+
+* **dependabot:** combine three update jobs to one ([422a736](https://github.com/x2od/.github/commit/422a7361b5d46fbd19534c78e37ee6705ae31503))
+
+
+### 👷 Continuous Integration
+
+* **dependabot:** use 1 job in the Dependabot workflow template ([#168](https://github.com/x2od/.github/issues/168)) ([9ca0d9c](https://github.com/x2od/.github/commit/9ca0d9cf54e25d4606d28afc73425b44f5490dcb))
+* **dependabot:** use the shared header comment in dependabot.yml ([3ccde8f](https://github.com/x2od/.github/commit/3ccde8fec1080cc26f9e02a880288470716cc7d9))
+* document pull_request_target policy, rename Dependabot workflow ([#169](https://github.com/x2od/.github/issues/169)) ([0a4968f](https://github.com/x2od/.github/commit/0a4968f0ac1e28435baf08c0540c1b49e5402516))
+
+
+### 📦 Build System
+
+* **@x2od/prettier-config:** update devDependency @x2od/prettier-config from 0.5.0 to 0.6.0 ([#164](https://github.com/x2od/.github/issues/164)) ([e9dd8fd](https://github.com/x2od/.github/commit/e9dd8fd1f973a3d78a514815e9d5c16b7320d90e))
+* **@x2od/prettier-config:** update devDependency @x2od/prettier-config from 0.6.0 to 0.7.0 ([#170](https://github.com/x2od/.github/issues/170)) ([6ae6a24](https://github.com/x2od/.github/commit/6ae6a2448f83bd72291c5c25b0a7acfef85da4ea))
+* **dependabot:** rename dependabot update workflow ([8f6e484](https://github.com/x2od/.github/commit/8f6e484ce77de47ab7c21c237863fab23677981a))
+* **follow-redirects:** bump follow-redirects from 1.16.0 to 1.16.1 ([#165](https://github.com/x2od/.github/issues/165)) ([ac34f6c](https://github.com/x2od/.github/commit/ac34f6c1ba6c0d4ac9f9f2989f3b64d5997a5680))
+* **qs:** bump qs from 6.16.0 to 6.17.1 ([#172](https://github.com/x2od/.github/issues/172)) ([38820ac](https://github.com/x2od/.github/commit/38820acf7c6d7b4e02e242e833c99b2847f2808e))
+* **undici:** bump undici from 8.11.2 to 8.12.3 ([#171](https://github.com/x2od/.github/issues/171)) ([c5a1e6e](https://github.com/x2od/.github/commit/c5a1e6eef68967f8411d426c3119f7bb39c52765))
+
 ## [0.1.1](https://github.com/x2od/.github/compare/v0.1.0...v0.1.1) (2026-10-20)
 
 
