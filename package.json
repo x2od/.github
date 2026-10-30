@@ -1,6 +1,6 @@
 {
   "name": "x2od-github",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Template files for x2od organization repos",
   "private": true,
   "scripts": {
