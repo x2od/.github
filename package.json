@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "@x2od/prettier-config": "^0.7.0",
+    "doctoc": "^2.5.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
     "prettier": "^3.9.10",
@@ -27,8 +28,11 @@
     "re2@1.27.0": true
   },
   "lint-staged": {
-    "**/*.{cls,cmp,component,css,html,js,json,json5,jsonc,md,mjs,page,trigger,txt,xml,yaml,yml}": [
-      "prettier --write"
+    "*.md": [
+      "doctoc --update-only --minlevel 2 --notitle --toc-pragma-style compact --loglevel warn --maxlevel 3"
+    ],
+    "*": [
+      "prettier --write --ignore-unknown"
     ]
   }
 }
