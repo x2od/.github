@@ -1,6 +1,6 @@
 # x2od shared configuration
 
-This repository holds the configuration that other x2od and dschach repositories use. This section describes each shared item and how to use it.
+This repository holds the configuration that other x2od and dschach repositories use. This README describes each shared item and how to use it.
 
 <!-- START doctoc -->
 
@@ -18,14 +18,7 @@ This repository holds the configuration that other x2od and dschach repositories
 - [Workflow templates](#workflow-templates)
 - [Community health files and organization profile](#community-health-files-and-organization-profile)
   - [Issue templates](#issue-templates)
-- [Purpose](#purpose)
-- [Workflows](#workflows)
-  - [SFDX](#sfdx)
-  - [GitHub CI](#github-ci)
-  - [Package Updates](#package-updates)
-- [Templates](#templates)
-  - [Bug Report](#bug-report)
-  - [Feature Request](#feature-request)
+- [Release Please](#release-please)
 
 <!-- END doctoc -->
 
@@ -33,7 +26,7 @@ This repository holds the configuration that other x2od and dschach repositories
 
 | Item                                                                                           | How another repository uses it                                                                 | Who can use it                                                       |
 | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| [Dependabot reusable workflow](#dependabot-reusable-workflow)                                  | A short workflow file with `uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main` | Any repository. This repository is public.                           |
+| [Dependabot reusable workflow](#dependabot-reusable-workflow)                                  | A short workflow file with `uses: x2od/.github/.github/workflows/dependabot-reusable.yml@main` | Any repository                                                       |
 | [Renovate shared configuration](#renovate-shared-configuration)                                | `"extends": ["github>x2od/.github:renovate.jsonc"]` in its Renovate file                       | Any repository that runs Renovate                                    |
 | [Workflow templates](#workflow-templates)                                                      | **Actions > New workflow**, in the section for the x2od organization                           | Repositories in the x2od organization only                           |
 | [Community health files and issue templates](#community-health-files-and-organization-profile) | Nothing. GitHub uses them automatically.                                                       | Repositories in the x2od organization that have no file of their own |
@@ -43,7 +36,10 @@ This repository holds the configuration that other x2od and dschach repositories
 
 The reusable workflow does 4 tasks for each Dependabot pull request:
 
-1. It replaces the title scope with the package name (or the group name), to match the Renovate title style. For example, `build(deps-dev): bump js-yaml from 4.3.0 to 4.3.2` becomes `build(js-yaml): bump js-yaml from 4.3.0 to 4.3.2`. It replaces only a missing scope, `deps`, or `deps-dev`. It keeps all other scopes. If the type is `deps` and only development dependencies need the npm package (`"dev": true` in `package-lock.json`), it also changes the type to `build`. For example, `deps: bump follow-redirects from 1.16.0 to 1.16.1` becomes `build(follow-redirects): bump follow-redirects from 1.16.0 to 1.16.1`. Dependabot can give the production prefix to an indirect package, for example in a security update. The `indirect-development-type` input sets the new type.
+1. It replaces the title scope with the package name (or the group name), to match the Renovate title style. It replaces only a missing scope, `deps`, or `deps-dev`, and it keeps all other scopes. Examples:
+   - `build(deps-dev): bump js-yaml from 4.3.0 to 4.3.2` becomes `build(js-yaml): bump js-yaml from 4.3.0 to 4.3.2`.
+   - If the type is `deps` and only development dependencies need the npm package (`"dev": true` in `package-lock.json`), it also changes the type to `build`. For example, `deps: bump follow-redirects from 1.16.0 to 1.16.1` becomes `build(follow-redirects): bump follow-redirects from 1.16.0 to 1.16.1`.
+   - Dependabot can give the production prefix to an indirect package, for example in a security update. The `indirect-development-type` input sets the new type.
 2. It adds the `dependabot` label.
 3. It approves and merges the pull request. The inputs set this for each update level (major, minor, patch), for security updates, and for each dependency type.
 4. After a successful merge, it adds the `dependabot` label and the `auto-merged` label, in 2 separate steps.
@@ -57,7 +53,7 @@ Each step writes its result to the job summary of the run. An error in a title s
 | Reusable workflow            | [`.github/workflows/dependabot-reusable.yml`](.github/workflows/dependabot-reusable.yml)                                                       |
 | Workflow template (caller)   | [`workflow-templates/dependabot-approve-and-auto-merge.yml`](workflow-templates/dependabot-approve-and-auto-merge.yml)                         |
 | Workflow template properties | [`workflow-templates/dependabot-approve-and-auto-merge.properties.json`](workflow-templates/dependabot-approve-and-auto-merge.properties.json) |
-| Caller for this repository   | [`.github/workflows/dependabot-approve-and-auto-merge.yml`](.github/workflows/dependabot-approve-and-auto-merge.yml)                           |
+| Caller for this repository   | [`.github/workflows/dependabot-update.yml`](.github/workflows/dependabot-update.yml)                                                           |
 
 The comments at the top of the reusable workflow give the full details. This README gives a summary.
 
@@ -93,7 +89,7 @@ jobs:
 
 Follow these rules in the calling file:
 
-- Use the `pull_request_target` event, not `pull_request`. On `pull_request`, Dependabot runs get a read-only `GITHUB_TOKEN`. On `pull_request_target`, the `GITHUB_TOKEN` can write. The reusable workflow never checks out or runs code from the pull request, so `pull_request_target` is safe here.
+- Use the `pull_request_target` event, not `pull_request`. On `pull_request`, Dependabot runs get a read-only `GITHUB_TOKEN`. On `pull_request_target`, the `GITHUB_TOKEN` can write. The reusable workflow never checks out or runs code from the pull request, so `pull_request_target` is safe here. Since 2026-11-02, GitHub blocks `pull_request_target` in public repositories unless a repository Actions event policy allows it (Settings > Actions > Policies). Each public repository needs its own policy. The header of [`workflow-templates/dependabot-approve-and-auto-merge.yml`](workflow-templates/dependabot-approve-and-auto-merge.yml) has the details.
 - Include all 5 event types. The `closed` type is necessary for task 4.
 - Give the calling job all 3 permissions. A called workflow cannot get more permissions than its caller. If 1 permission is missing, GitHub does not start the run.
 - Do not use `secrets: inherit`. Pass only the `token` secret.
@@ -134,30 +130,30 @@ When a repository calls the workflow more than 1 time, only the call with `renam
 
 All inputs are optional.
 
-| Input                       | Type    | Default                                                | Description                                                                                                                                                                                                                                        |
-| --------------------------- | ------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `autoapprove-major`         | boolean | `false`                                                | Approve major updates.                                                                                                                                                                                                                             |
-| `autoapprove-minor`         | boolean | `false`                                                | Approve minor updates.                                                                                                                                                                                                                             |
-| `autoapprove-patch`         | boolean | `false`                                                | Approve patch updates.                                                                                                                                                                                                                             |
-| `automerge-major`           | boolean | `false`                                                | Turn on auto-merge for major updates.                                                                                                                                                                                                              |
-| `automerge-minor`           | boolean | `false`                                                | Turn on auto-merge for minor updates.                                                                                                                                                                                                              |
-| `automerge-patch`           | boolean | `false`                                                | Turn on auto-merge for patch updates.                                                                                                                                                                                                              |
-| `autoapprove-security`      | boolean | `false`                                                | Approve updates that fix a Dependabot security alert, at all update levels. Needs the "token" secret with "Dependabot alerts: Read-only".                                                                                                          |
-| `automerge-security`        | boolean | `false`                                                | Turn on auto-merge for updates that fix a Dependabot security alert, at all update levels. Needs the "token" secret with "Dependabot alerts: Read-only".                                                                                           |
-| `dependency-types`          | string  | `direct:production`, `<direct:development`, `indirect` | Comma-separated dependency types that this call can approve and merge. Valid values: direct:production, direct:development, indirect.                                                                                                              |
-| `autoapprove-production`    | string  | (empty)                                                | Approve these levels for direct:production dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the autoapprove-major/minor/patch/security inputs for this dependency type.               |
-| `automerge-production`      | string  | (empty)                                                | Turn on auto-merge for these levels for direct:production dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the automerge-major/minor/patch/security inputs for this dependency type.  |
-| `autoapprove-development`   | string  | (empty)                                                | Approve these levels for direct:development dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the autoapprove-major/minor/patch/security inputs for this dependency type.              |
-| `automerge-development`     | string  | (empty)                                                | Turn on auto-merge for these levels for direct:development dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the automerge-major/minor/patch/security inputs for this dependency type. |
-| `autoapprove-indirect`      | string  | (empty)                                                | Approve these levels for indirect dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the autoapprove-major/minor/patch/security inputs for this dependency type.                        |
-| `automerge-indirect`        | string  | (empty)                                                | Turn on auto-merge for these levels for indirect dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the automerge-major/minor/patch/security inputs for this dependency type.           |
-| `rename-title`              | boolean | `true`                                                 | Edit the title and add the labels. When you call this workflow more than 1 time, set this to false on all calls but 1.                                                                                                                             |
-| `indirect-development-type` | string  | `build`                                                | The title type for an npm package that only development dependencies need ("dev": true in package-lock.json). It replaces the type "deps", which Dependabot can give to an indirect package. Set to an empty string to keep "deps".                |
-| `create-labels`             | boolean | `true`                                                 | Create the "dependabot" and "auto-merged" labels if they do not exist.                                                                                                                                                                             |
-| `merge-method`              | string  | `squash`                                               | The merge method: squash, merge, or rebase.                                                                                                                                                                                                        |
-| `merge-mode`                | string  | `auto`                                                 | How to merge. "auto": use GitHub auto-merge if the repository allows it; if not, wait for the checks in the job, then merge. "wait": always wait for the checks in the job, then merge. "now": merge at once, without a wait.                      |
-| `wait-timeout-minutes`      | number  | `30`                                                   | For a wait in the job: the maximum time to wait for the checks, from 1 to 50. After this time, the PR stays open.                                                                                                                                  |
-| `token-user`                | string  | (empty)                                                | The login of the "token" user. Leave empty to find it automatically. The workflow uses it to find its own approvals and its own merges.                                                                                                            |
+| Input                       | Type    | Default                                         | Description                                                                                                                                                                                                                                        |
+| --------------------------- | ------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `autoapprove-major`         | boolean | `false`                                         | Approve major updates.                                                                                                                                                                                                                             |
+| `autoapprove-minor`         | boolean | `false`                                         | Approve minor updates.                                                                                                                                                                                                                             |
+| `autoapprove-patch`         | boolean | `false`                                         | Approve patch updates.                                                                                                                                                                                                                             |
+| `automerge-major`           | boolean | `false`                                         | Turn on auto-merge for major updates.                                                                                                                                                                                                              |
+| `automerge-minor`           | boolean | `false`                                         | Turn on auto-merge for minor updates.                                                                                                                                                                                                              |
+| `automerge-patch`           | boolean | `false`                                         | Turn on auto-merge for patch updates.                                                                                                                                                                                                              |
+| `autoapprove-security`      | boolean | `false`                                         | Approve updates that fix a Dependabot security alert, at all update levels. Needs the "token" secret with "Dependabot alerts: Read-only".                                                                                                          |
+| `automerge-security`        | boolean | `false`                                         | Turn on auto-merge for updates that fix a Dependabot security alert, at all update levels. Needs the "token" secret with "Dependabot alerts: Read-only".                                                                                           |
+| `dependency-types`          | string  | `direct:production,direct:development,indirect` | Comma-separated dependency types that this call can approve and merge. Valid values: direct:production, direct:development, indirect.                                                                                                              |
+| `autoapprove-production`    | string  | (empty)                                         | Approve these levels for direct:production dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the autoapprove-major/minor/patch/security inputs for this dependency type.               |
+| `automerge-production`      | string  | (empty)                                         | Turn on auto-merge for these levels for direct:production dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the automerge-major/minor/patch/security inputs for this dependency type.  |
+| `autoapprove-development`   | string  | (empty)                                         | Approve these levels for direct:development dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the autoapprove-major/minor/patch/security inputs for this dependency type.              |
+| `automerge-development`     | string  | (empty)                                         | Turn on auto-merge for these levels for direct:development dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the automerge-major/minor/patch/security inputs for this dependency type. |
+| `autoapprove-indirect`      | string  | (empty)                                         | Approve these levels for indirect dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the autoapprove-major/minor/patch/security inputs for this dependency type.                        |
+| `automerge-indirect`        | string  | (empty)                                         | Turn on auto-merge for these levels for indirect dependencies, as a comma-separated list of major, minor, patch, and security (or "none"). If set, it replaces the automerge-major/minor/patch/security inputs for this dependency type.           |
+| `rename-title`              | boolean | `true`                                          | Edit the title and add the labels. When you call this workflow more than 1 time, set this to false on all calls but 1.                                                                                                                             |
+| `indirect-development-type` | string  | `build`                                         | The title type for an npm package that only development dependencies need ("dev": true in package-lock.json). It replaces the type "deps", which Dependabot can give to an indirect package. Set to an empty string to keep "deps".                |
+| `create-labels`             | boolean | `true`                                          | Create the "dependabot" and "auto-merged" labels if they do not exist.                                                                                                                                                                             |
+| `merge-method`              | string  | `squash`                                        | The merge method: squash, merge, or rebase.                                                                                                                                                                                                        |
+| `merge-mode`                | string  | `auto`                                          | How to merge. "auto": use GitHub auto-merge if the repository allows it; if not, wait for the checks in the job, then merge. "wait": always wait for the checks in the job, then merge. "now": merge at once, without a wait.                      |
+| `wait-timeout-minutes`      | number  | `30`                                            | For a wait in the job: the maximum time to wait for the checks, from 1 to 50. After this time, the PR stays open.                                                                                                                                  |
+| `token-user`                | string  | (empty)                                         | The login of the "token" user. Leave empty to find it automatically. The workflow uses it to find its own approvals and its own merges.                                                                                                            |
 
 ### The `token` secret
 
@@ -236,7 +232,7 @@ The script takes the workflow path as an optional argument. The default is `.git
 
 ## Renovate shared configuration
 
-[`renovate.jsonc`](renovate.jsonc) holds the shared Renovate rules for @dschach and @x2od repositories. A repository uses them with 1 line in its own Renovate file, for example `.github/renovate.json`:
+[`renovate.jsonc`](renovate.jsonc) holds the shared Renovate rules for `@dschach` and `@x2od` repositories. A repository uses them with 1 line in its own Renovate file, for example `.github/renovate.json`:
 
 ```json
 {
@@ -249,7 +245,7 @@ The repository file can add or change rules. For example, [`.github/renovate.jso
 
 The shared rules do these things:
 
-- **Commit messages and PR titles** use Conventional Commits, with the package name as the scope. Titles keep capital letters. npm titles name the dependency type and show versions without a `v`. GitHub Actions titles show the major version with a `v`.
+- **Commit messages and PR titles** use Conventional Commits, with the package name as the scope. Titles keep the capital letters of the package name. npm titles name the dependency type and show versions without a `v`. GitHub Actions titles show the major version with a `v`.
 
   | Update                                   | PR title                                                                   |
   | ---------------------------------------- | -------------------------------------------------------------------------- |
@@ -257,6 +253,8 @@ The shared rules do these things:
   | npm `dependencies`                       | `deps(lodash): update dependency lodash from 4.17.20 to 4.17.21`           |
   | GitHub Action                            | `ci(actions/setup-java): update actions/setup-java action from v5 to v6`   |
   | Version in a workflow file, such as Java | `ci(java-jdk): update dependency java-jdk from v11 to v21`                 |
+
+  The dependency type sets the type in the title:
 
   | Dependency                                                               | Type    |
   | ------------------------------------------------------------------------ | ------- |
@@ -277,11 +275,11 @@ The shared rules do these things:
 
 The [`workflow-templates`](workflow-templates) directory holds starter workflows. A person with write access to a repository in the x2od organization finds them under **Actions > New workflow**, in the section for the organization. Each template has a `.properties.json` file that gives its name, description, and icon. Repositories outside the x2od organization (for example, dschach repositories) do not see the templates. Copy the file by hand for those repositories.
 
-| Template                                                                                      | What it does                                                                                                                                                                                                                                     |
-| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [Dependabot Approve and Auto-Merge](workflow-templates/dependabot-approve-and-auto-merge.yml) | Calls the [Dependabot reusable workflow](#dependabot-reusable-workflow) 1 time, in 1 job, for all 3 dependency types. It approves and merges minor, patch, and security updates. Major updates that are not security fixes need a manual review. |
-| [Auto-Assign Issues](workflow-templates/issue-auto-assign.yml)                                | Assigns each new or edited issue to `dschach`, with `pozil/auto-assign-issue`.                                                                                                                                                                   |
-| [PMD Analysis Action](workflow-templates/pmd-analysis-action.yml)                             | Runs PMD on `force-app` on each push and pull request to the default branch, and uploads the results as a SARIF file to code scanning. GitHub suggests it for repositories that have a `sfdx-project.json` file.                                 |
+| Template                                                                                      | What it does                                                                                                                                                                                                                                                                                       |
+| --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Dependabot Approve and Auto-Merge](workflow-templates/dependabot-approve-and-auto-merge.yml) | Calls the [Dependabot reusable workflow](#dependabot-reusable-workflow) 1 time, in 1 job, for direct and development dependencies. It approves and merges minor, patch, and security updates for them. Indirect dependencies, and major updates that are not security fixes, need a manual review. |
+| [Auto-Assign Issues](workflow-templates/issue-auto-assign.yml)                                | Assigns each new or edited issue to `dschach`, with `pozil/auto-assign-issue`.                                                                                                                                                                                                                     |
+| [PMD Analysis Action](workflow-templates/pmd-analysis-action.yml)                             | Runs PMD on `force-app` on each push and pull request to the default branch, and uploads the results as a SARIF file to code scanning. GitHub suggests it for repositories that have a `sfdx-project.json` file.                                                                                   |
 
 ## Community health files and organization profile
 
@@ -307,7 +305,10 @@ The [`.github/ISSUE_TEMPLATE`](.github/ISSUE_TEMPLATE) folder holds 2 issue form
 
 [`profile/README.md`](profile/README.md) is the text on the [x2od organization page](https://github.com/x2od).
 
----
+## Release Please
+
+This repository uses Release Please to create the changelog. The workflow [`release-please.yml`](.github/workflows/release-please.yml) runs on each push to `main`. Release Please reads commit messages that follow Conventional Commits, creates or updates [CHANGELOG.md](CHANGELOG.md), and opens a release pull request. Merge that pull request to publish a release.
+<!-- ---
 
 # .github
 
@@ -368,3 +369,4 @@ Configured with a YAML template instead of markdown, this template allows for te
 ### Feature Request
 
 This is a more traditional markdown template
+ -->
