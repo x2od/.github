@@ -68,8 +68,8 @@ jobs:
       automerge-production: minor,patch,security
       autoapprove-development: minor,patch,security
       automerge-development: minor,patch,security
-      autoapprove-indirect: ''
-      automerge-indirect: ''
+      autoapprove-indirect: ""
+      automerge-indirect: ""
       # Edit the title and add the labels. With more than 1 call, set false on all
       # calls but 1.
       rename-title: true
@@ -82,7 +82,7 @@ jobs:
       merge-mode: auto # auto (GitHub auto-merge, or wait if it is off), wait, or now
       wait-timeout-minutes: 30 # 1 to 50; for a wait in the job
       # The login of the token user. Empty finds it automatically.
-      token-user: ''
+      token-user: ""
     secrets:
       # Optional PAT. Store it 2 times, with this same name: as a Dependabot secret
       # (runs that Dependabot starts can read only Dependabot secrets) and as an

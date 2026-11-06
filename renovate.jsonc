@@ -73,7 +73,16 @@
     {
       "description": "Github: turn off everything except major updates",
       "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["minor", "patch", "pin", "pinDigest", "digest", "rollback", "bump", "replacement"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "pinDigest",
+        "digest",
+        "rollback",
+        "bump",
+        "replacement"
+      ],
       "enabled": false
     },
     {

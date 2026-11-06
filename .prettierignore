@@ -29,3 +29,4 @@ data/
 *.py
 .claude
 .release-please-config.json
+CHANGELOG.md

@@ -1,8 +1,8 @@
 name: 🐛Bug Report
 description: File a bug report here
-title: '[BUG]: '
-labels: ['bug']
-assignees: ['dschach']
+title: "[BUG]: "
+labels: ["bug"]
+assignees: ["dschach"]
 body:
   - type: markdown
     attributes:
@@ -20,14 +20,14 @@ body:
 
   - type: input
     attributes:
-      label: 'Salesforce Release'
+      label: "Salesforce Release"
       placeholder: "Spring '24 or API 60.0"
     validations:
       required: true
 
   - type: dropdown
     attributes:
-      label: 'Environment'
+      label: "Environment"
       multiple: false
       options:
         - Production
