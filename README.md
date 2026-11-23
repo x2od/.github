@@ -269,7 +269,7 @@ The shared rules do these things:
 - **Groups:** React packages update together.
 - **Version ranges:** npm ranges are bumped. Peer dependency ranges are widened. ESLint stays below version 10.
 - **Labels:** each pull request gets the `renovate` label and its update level (`major`, `minor`, or `patch`).
-- **Other settings:** the Dependency Dashboard is on, vulnerability alerts are on, lock file maintenance is off (a repository can turn it on), and the time zone is `America/Los_Angeles`.
+- **Other settings:** the Dependency Dashboard is on, vulnerability alerts are on, lock file maintenance is off (a repository can turn it on), and the time zone is `Australia/Sydney`.
 
 ## Workflow templates
 

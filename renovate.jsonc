@@ -12,7 +12,7 @@
     ":widenPeerDependencies"
   ],
   "schedule": [],
-  "timezone": "America/Los_Angeles",
+  "timezone": "Australia/Sydney",
   "configMigration": true,
   "automergeType": "pr",
   "commitMessageLowerCase": "never",
