@@ -9,7 +9,7 @@
     "docker:pinDigests",
     ":approveMajorUpdates",
     ":separateMultipleMajorReleases",
-    ":widenPeerDependencies",
+    ":widenPeerDependencies"
   ],
   "schedule": [],
   "timezone": "Australia/Sydney",
@@ -23,20 +23,20 @@
   "commitMessageExtra": "from {{currentVersion}} to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{newVersion}}{{else}}{{#if isSingleVersion}}{{newVersion}}{{else}}{{#if newValue}}{{{newVersion}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}",
   "dependencyDashboard": {
     "enabled": true,
-    "autoclose": true,
+    "autoclose": true
   },
   "configWarningReuseIssue": false,
   "separateMinorPatch": false,
   "pinDigests": false,
   "github-actions": {
     "description": "All Github updates",
-    "semanticCommitType": "ci",
+    "semanticCommitType": "ci"
   },
   "npm": {
     "description": "All npm updates. Note commit extra message was set globally.",
     "rangeStrategy": "bump",
     "semanticCommitType": "build",
-    "commitMessageTopic": "{{prettyDepType}} {{depName}}",
+    "commitMessageTopic": "{{prettyDepType}} {{depName}}"
   },
   // prettier-ignore
   "major": { "autoApprove": false, "automerge": false, "dependencyDashboardApproval": true, "addLabels": ["renovate", "major"] },
@@ -51,26 +51,26 @@
     {
       "description": "all minor/patch updates",
       "matchCurrentVersion": ">= 1.0.0",
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchUpdateTypes": ["minor", "patch"]
     },
     {
       "description": "npm dependencies (rare)",
       "semanticCommitType": "deps",
       "matchManagers": ["npm"],
-      "matchDepTypes": ["dependencies"],
+      "matchDepTypes": ["dependencies"]
     },
     {
       "description": "renovate updates require approval",
       "matchManagers": ["npm"],
       "matchPackageNames": ["renovate"],
       "dependencyDashboardApproval": true,
-      "autoApprove": false,
+      "autoApprove": false
     },
     {
       "description": "Keep eslint on v9. Do not allow v10 or later.",
       "matchManagers": ["npm"],
       "matchPackageNames": ["eslint"],
-      "allowedVersions": "<10",
+      "allowedVersions": "<10"
     },
     {
       "description": "Github: turn off everything except major updates",
@@ -83,21 +83,21 @@
         "digest",
         "rollback",
         "bump",
-        "replacement",
+        "replacement"
       ],
-      "enabled": false,
+      "enabled": false
     },
     {
       "description": "Github major updates",
       "matchManagers": ["github-actions"],
       "matchUpdateTypes": ["major"],
-      "commitMessageExtra": "from v{{replace '^v?([0-9]+).*$' '$1' currentVersion}} to {{prettyNewMajor}}",
+      "commitMessageExtra": "from v{{replace '^v?([0-9]+).*$' '$1' currentVersion}} to {{prettyNewMajor}}"
     },
     {
       "description": "All prerelease",
       "matchCurrentVersion": "<1.0.0",
       "automerge": false,
-      "autoApprove": false,
+      "autoApprove": false
     },
     {
       "description": "Minor/Patch updates to automerge, to save time but allow some clutter, overriding all above rules",
@@ -109,11 +109,11 @@
         "mocha",
         "husky",
         "release-please",
-        "/^@x2od/",
+        "/^@x2od/"
       ],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": false,
-      "autoApprove": true,
-    },
-  ],
+      "autoApprove": true
+    }
+  ]
 }
